@@ -3,14 +3,127 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:i="http://schemas.microsoft.com/xaml/behaviors"
         xmlns:local="clr-namespace:ImageBatchResizer.Views"
         xmlns:converters="clr-namespace:ImageBatchResizer.Converters"
+        xmlns:controls="clr-namespace:ImageBatchResizer.Controls"
         mc:Ignorable="d"
         Title="MainWindow" Height="720" Width="800" MinWidth="600" MinHeight="600">
+    <!-- xmlns:i https://stackoverflow.com/questions/20743961/the-name-interaction-does-not-exist-in-the-namespace-http-schemas-microsoft -->
 
     <Window.Resources>
         <converters:IsCheck2VisibilityConverter x:Key="IsCheck2VisibilityConverter"/>
         <converters:ProgressBarValueRound x:Key="ProgressBarValueRound"/>
+
+        <ItemsPanelTemplate x:Key="ListBoxItemsPanel2">
+            <StackPanel Orientation="Vertical">
+            </StackPanel>
+        </ItemsPanelTemplate>
+        <Style x:Key="ListBox_History_style" TargetType="{x:Type ListBox}">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderBrush" Value="{StaticResource ListBox.Static.Border}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Foreground" Value="{DynamicResource {x:Static SystemColors.ControlTextBrushKey}}"/>
+            <Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Auto"/>
+            <Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Auto"/>
+            <Setter Property="ScrollViewer.CanContentScroll" Value="true"/>
+            <Setter Property="ScrollViewer.PanningMode" Value="Both"/>
+            <Setter Property="Stylus.IsFlicksEnabled" Value="False"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="{x:Type ListBox}">
+                        <Border x:Name="Bd" Background="{TemplateBinding Background}" BorderThickness="{TemplateBinding BorderThickness}" BorderBrush="{TemplateBinding BorderBrush}" Padding="1" SnapsToDevicePixels="true">
+                            <!--把 ScrollViewer 自动滚动到底部的附加属性-->
+                            <controls:SmoothScrollViewer x:Name="scv" Style="{StaticResource UWPstyle_scrollviewer}" Focusable="false" Padding="{TemplateBinding Padding}">
+                                <ItemsPresenter SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}"/>
+                            </controls:SmoothScrollViewer>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsEnabled" Value="false">
+                                <Setter Property="Background" TargetName="Bd" Value="{StaticResource ListBox.Disabled.Background}"/>
+                                <Setter Property="BorderBrush" TargetName="Bd" Value="{StaticResource ListBox.Disabled.Border}"/>
+                            </Trigger>
+                            <Trigger Property="Selector.IsSelected" Value="True">
+                                <Setter Property="Background" TargetName="Bd" Value="Black"/>
+                            </Trigger>
+                            <MultiTrigger>
+                                <MultiTrigger.Conditions>
+                                    <Condition Property="IsGrouping" Value="true"/>
+                                    <Condition Property="VirtualizingPanel.IsVirtualizingWhenGrouping" Value="false"/>
+                                </MultiTrigger.Conditions>
+                                <Setter Property="ScrollViewer.CanContentScroll" Value="false"/>
+                            </MultiTrigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- 剪贴板历史记录子项模板 -->
+        <DataTemplate x:Key="History_Item_Template">
+            <Grid Height="auto" 
+                  Width="auto" 
+                  HorizontalAlignment="Stretch">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="1*"/>
+                    <ColumnDefinition Width="40"/>
+                </Grid.ColumnDefinitions>
+                <Label Content="{Binding .}"/>
+                <Button Grid.Column="1">×
+                </Button>
+            </Grid>
+        </DataTemplate>
+
+        <!-- 剪贴板listbox容器模板 -->
+        <Style TargetType="{x:Type ListBoxItem}" x:Key="ContainerStyle_History">
+            <Setter Property="Margin" Value="16 4 16 4"/>
+            <Setter Property="Padding" Value="0"/>
+            <Setter Property="ContentTemplate" Value="{StaticResource History_Item_Template}" />
+            <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+            <Setter Property="Template">
+                <!--https://www.cnblogs.com/jjseen/p/5491698.html-->
+                <Setter.Value>
+                    <ControlTemplate TargetType="{x:Type ListBoxItem}">
+                        <Border x:Name="Bd" BorderBrush="{StaticResource ResourceKey=Item.Normal.Background}" BorderThickness="2" Background="{StaticResource Item.Normal.Background}" Padding="{TemplateBinding Padding}" SnapsToDevicePixels="true">
+                            <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <MultiTrigger>
+                                <MultiTrigger.Conditions>
+                                    <Condition Property="IsMouseOver" Value="True"/>
+                                </MultiTrigger.Conditions>
+                                <Setter Property="Background" TargetName="Bd" Value="{StaticResource color_buttonMouseOver}"/>
+                                <Setter Property="BorderBrush" TargetName="Bd" Value="{StaticResource Item.MouseOver.Border}"/>
+                                <!-- 鼠标滑过的阴影效果 -->
+                                <!-- <Setter Property="Effect">
+                                    <Setter.Value>
+                                        <DropShadowEffect Color="{DynamicResource shadowColor_black}" ShadowDepth="0" BlurRadius="{DynamicResource shadowBlurRadius}" Opacity="10"/>
+                                    </Setter.Value>
+                                </Setter> -->
+                            </MultiTrigger>
+                            <MultiTrigger>
+                                <MultiTrigger.Conditions>
+                                    <Condition Property="Selector.IsSelectionActive" Value="False"/>
+                                    <Condition Property="IsSelected" Value="True"/>
+                                </MultiTrigger.Conditions>
+                                <Setter Property="BorderBrush" TargetName="Bd" Value="{StaticResource Item.SelectedInactive.Border}"/>
+                            </MultiTrigger>
+                            <MultiTrigger>
+                                <MultiTrigger.Conditions>
+                                    <Condition Property="Selector.IsSelectionActive" Value="True"/>
+                                    <Condition Property="IsSelected" Value="True"/>
+                                </MultiTrigger.Conditions>
+                                <Setter Property="BorderBrush" TargetName="Bd" Value="{StaticResource Item.SelectedActive.Border}"/>
+                            </MultiTrigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter Property="TextElement.Foreground" TargetName="Bd" Value="{DynamicResource {x:Static SystemColors.GrayTextBrushKey}}"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
     </Window.Resources>
 
     <Grid>
@@ -23,6 +136,42 @@
             <RowDefinition Height="20"/>
         </Grid.RowDefinitions>
 
+        <ListBox x:Name="ListBox_Files" 
+                Visibility="Hidden" 
+                ItemsPanel="{DynamicResource ListBoxItemsPanel2}"
+                Style="{DynamicResource ResourceKey=ListBox_History_style}" 
+                VirtualizingPanel.ScrollUnit="Pixel" 
+                ScrollViewer.HorizontalScrollBarVisibility="Disabled" 
+                ScrollViewer.VerticalScrollBarVisibility="Visible" 
+                BorderThickness="0"
+                Margin="-1,0,0,0" SelectionMode="Single" 
+                ItemContainerStyle="{StaticResource ContainerStyle_History}" 
+                Grid.Row="0" 
+                ItemsSource="{Binding SubViewModel.PinnedList}"
+                SelectionChanged="ListBox_Files_SelectionChanged" >
+        </ListBox>
+
+        <DataGrid Grid.Row="0"
+                  AllowDrop="True"
+                  ItemsSource="{Binding InputFileList}"
+                  AutoGenerateColumns="False"
+                  CanUserResizeRows="False"
+                  HeadersVisibility="All"
+                  RowHeaderWidth="32"
+                  SelectionUnit="CellOrRowHeader">
+            <DataGrid.Columns>
+                <DataGridTextColumn Header="文件名" IsReadOnly="True" Binding="{Binding Name}"/>
+                <DataGridTextColumn Header="路径" IsReadOnly="True" Binding="{Binding Path}" />
+                <DataGridTextColumn Header="转换后路径" IsReadOnly="True" Binding="{Binding ResizedPath}" />
+            </DataGrid.Columns>
+            <!-- https://stackoverflow.com/questions/40104765/bind-event-in-mvvm-and-pass-event-arguments-as-command-parameter -->
+            <i:Interaction.Triggers>
+                <i:EventTrigger EventName="Drop">
+                    <i:CallMethodAction TargetObject="{Binding}"
+                                        MethodName="DataGrid_Drop"/>
+                </i:EventTrigger>
+            </i:Interaction.Triggers>
+        </DataGrid>
 
         <GridSplitter Grid.Row="1"
                       HorizontalAlignment="Stretch"
@@ -475,9 +624,11 @@
                 <ColumnDefinition Width="1*"/>
                 <ColumnDefinition Width="1*"/>
             </Grid.ColumnDefinitions>
-            <ProgressBar Grid.Column="0" Grid.ColumnSpan="2" x:Name="ProcessProgressBar">
-            </ProgressBar>
-            <TextBlock Text="20/1330"
+            <ProgressBar Grid.Column="0" 
+                         Grid.ColumnSpan="2" 
+                         x:Name="ProcessProgressBar"
+                         Value="{Binding ProcessedPercent}"/>
+            <TextBlock Text="{Binding ProcessedInstruction}"
                        HorizontalAlignment="Right"
                        VerticalAlignment="Center"
                        Grid.Column="0"

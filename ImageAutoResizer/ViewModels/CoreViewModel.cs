@@ -17,6 +17,9 @@ using Prism.Services.Dialogs;
 using Microsoft.Win32;
 using Ookii.Dialogs.Wpf;
 using System.Linq;
+using System.Windows;
+using System.IO;
+using System.Collections.Specialized;
 
 namespace ImageBatchResizer.ViewModels
 {
@@ -62,6 +65,9 @@ namespace ImageBatchResizer.ViewModels
         private bool _isEnableIndex = false;
         private bool _isEnableTime;
         private bool _isEnableQuality;
+        private int _ProcessedCount = 0;
+        private string _ProcessedInstruction = "0/0";
+        private double _ProcessedPercent = 0;
 
         public bool IsEnableParametersPanel
         {
@@ -396,13 +402,13 @@ namespace ImageBatchResizer.ViewModels
         {
             ResizeModeList = new ObservableCollection<ResizeModeModel>
             {
-                new("Crop", ResizeMode.Crop),
-                new("Max", ResizeMode.Max),
+                new("Crop", SixLabors.ImageSharp.Processing.ResizeMode.Crop),
+                new("Max", SixLabors.ImageSharp.Processing.ResizeMode.Max),
             };
-            SelectedResizeModeModel = new("Min", ResizeMode.Min);
+            SelectedResizeModeModel = new("Min", SixLabors.ImageSharp.Processing.ResizeMode.Min);
             ResizeModeList.Add(SelectedResizeModeModel);
-            ResizeModeList.Add(new("Pad", ResizeMode.Pad));
-            ResizeModeList.Add(new("Stretch", ResizeMode.Stretch));
+            ResizeModeList.Add(new("Pad", SixLabors.ImageSharp.Processing.ResizeMode.Pad));
+            ResizeModeList.Add(new("Stretch", SixLabors.ImageSharp.Processing.ResizeMode.Stretch));
         }
 
         public string OutputPath
@@ -483,6 +489,45 @@ namespace ImageBatchResizer.ViewModels
 
         #endregion
 
+        public int ProcessedCount
+        {
+            get => _ProcessedCount;
+            set
+            {
+                SetValue(ref _ProcessedCount, value);
+            }
+        }
+        public string ProcessedInstruction
+        {
+            get => _ProcessedInstruction;
+            set
+            {
+                SetValue(ref _ProcessedInstruction, value);
+            }
+        }
+        public double ProcessedPercent
+        {
+            get => _ProcessedPercent;
+            set
+            {
+                SetValue(ref _ProcessedPercent, value);
+            }
+        }
+
+        public ObservableCollection<FileModel> InputFileList { get; set; } = new();
+        private void OnCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
+        {
+            ProcessedInstruction = @$"{ProcessedCount}/{InputFileList.Count}";
+            try
+            {
+                ProcessedPercent = ProcessedCount / InputFileList.Count;
+            }
+            catch (DivideByZeroException dbze)
+            {
+                ProcessedPercent = 0;
+            }
+        }
+
         public CoreViewModel()
         {
             InitFormatList();
@@ -490,10 +535,45 @@ namespace ImageBatchResizer.ViewModels
             InitResizeModeList();
             SelectOutputFolderCommand = new DelegateCommand(() => 
             {
-                var dlg = new Ookii.Dialogs.Wpf.VistaFolderBrowserDialog();
+                var dlg = new VistaFolderBrowserDialog();
                 var result = dlg.ShowDialog();
                 if (result == true) OutputPath = dlg.SelectedPath;
             });
+            InputFileList.CollectionChanged += OnCollectionChanged;
+        }
+
+        // https://stackoverflow.com/questions/40104765/bind-event-in-mvvm-and-pass-event-arguments-as-command-parameter
+        public void DataGrid_Drop(object sender, DragEventArgs e)
+        {
+            // https://stackoverflow.com/questions/5662509/drag-and-drop-files-into-wpf
+            if (e.Data.GetDataPresent(DataFormats.FileDrop))
+            {
+                string[] filesOrFolders = (string[])e.Data.GetData(DataFormats.FileDrop);
+                foreach (string file in filesOrFolders) 
+                {
+                    HandleDropFiles(file); 
+                }
+            }
+        }
+
+        private void HandleDropFiles(string path)
+        {
+            if (File.Exists(path) && !IsInputFileListAlreadyContains(path))
+            {
+                InputFileList.Add(new(Path.GetFileName(path), path));
+            }
+        }
+
+        private bool IsInputFileListAlreadyContains(string path)
+        {
+            foreach (var file in InputFileList)
+            {
+                if (file.Path == path)
+                {
+                    return true;
+                }
+            }
+            return false;
         }
 
         private void Resize()

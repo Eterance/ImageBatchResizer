@@ -26,5 +26,11 @@ namespace ImageBatchResizer.Views
             var coreVM = new CoreViewModel();
             DataContext = coreVM;
         }
+
+        private void ListBox_Files_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+
+        }
+
     }
 }
