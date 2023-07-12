@@ -32,7 +32,8 @@
 
         <Grid Grid.Row="2" 
               Visibility="{Binding ElementName=ConsoleCheckBox, Path=IsChecked, Converter={StaticResource IsCheck2VisibilityConverter}}">
-            <TextBox IsReadOnly="True"></TextBox>
+            <TextBox IsReadOnly="True"
+                     VerticalAlignment="Stretch"></TextBox>
         </Grid>
 
 
@@ -101,12 +102,14 @@
                            HorizontalAlignment="Left">宽</Label>
                     <TextBox Grid.Column="1"
                              VerticalContentAlignment="Center"
-                             HorizontalContentAlignment="Center">10000</TextBox>
+                             HorizontalContentAlignment="Center"
+                             Text="{Binding InputResUpperLimitWidth}"/>
                     <Label Grid.Column="2"
                            HorizontalAlignment="Left">长</Label>
                     <TextBox Grid.Column="3"
                              VerticalContentAlignment="Center"
-                             HorizontalContentAlignment="Center">8000</TextBox>
+                             HorizontalContentAlignment="Center"
+                             Text="{Binding InputResUpperLimitHeight}"/>
                 </Grid>
 
                 <CheckBox x:Name="InputResolutionLowerLimitCheckBox" 
@@ -127,18 +130,20 @@
                            HorizontalAlignment="Left">宽</Label>
                     <TextBox Grid.Column="1"
                              VerticalContentAlignment="Center"
-                             HorizontalContentAlignment="Center">1920</TextBox>
+                             HorizontalContentAlignment="Center"
+                             Text="{Binding InputResLowerLimitWidth}"/>
                     <Label Grid.Column="2"
                            HorizontalAlignment="Left">长</Label>
                     <TextBox Grid.Column="3"
                              VerticalContentAlignment="Center"
-                             HorizontalContentAlignment="Center">1080</TextBox>
+                             HorizontalContentAlignment="Center"
+                             Text="{Binding InputResLowerLimitHeight}"/>
                 </Grid>
 
                 <CheckBox VerticalAlignment="Stretch" 
                           VerticalContentAlignment="Center"
                           Margin="4 8 4 8"
-                          IsChecked="{Binding IsResLimitationAdaptPortraitImage}">
+                          IsChecked="{Binding IsInputResLimitationAdaptPortraitImage}">
                     <TextBlock TextWrapping="WrapWithOverflow">分辨率限制自适应竖图</TextBlock>
                 </CheckBox>
 
@@ -157,7 +162,7 @@
                 <Label>模式</Label>
                 <WrapPanel Orientation="Horizontal">
                     <RadioButton x:Name="FileSizeModeRadioButton"
-                                 IsChecked="True"
+                                 IsChecked="{Binding IsFileSizeFirstMode}"
                                  Margin="4"
                                  VerticalContentAlignment="Center">
                         <Label>文件大小优先</Label>
@@ -182,12 +187,14 @@
                         </Grid.ColumnDefinitions>
                         <TextBox Grid.Column="0"
                                  VerticalContentAlignment="Center"
-                                 HorizontalContentAlignment="Center">300</TextBox>
+                                 HorizontalContentAlignment="Center"
+                                 Text="{Binding TargetSizeLowerLimit}"/>
                         <Label Grid.Column="1" 
                                HorizontalAlignment="Left">-</Label>
                         <TextBox Grid.Column="2"
                                  VerticalContentAlignment="Center"
-                                 HorizontalContentAlignment="Center">350</TextBox>
+                                 HorizontalContentAlignment="Center"
+                                 Text="{Binding TargetSizeUpperLimit}"/>
                     </Grid>
 
                     <DockPanel Margin="0 8 0 8">
@@ -197,14 +204,18 @@
                         <TextBox DockPanel.Dock="Left"
                                  Margin="4 0 0 0"
                                  VerticalContentAlignment="Center"
-                                 HorizontalContentAlignment="Center">20</TextBox>
+                                 HorizontalContentAlignment="Center"
+                                 Text="{Binding BinarySearchTimesLimit}"/>
                     </DockPanel>
 
-                    <CheckBox Margin="0 4 0 4">
+                    <CheckBox Margin="0 4 0 4"
+                              IsChecked="{Binding IsDeleteSmallerThanTarget}">
                         <TextBlock TextWrapping="WrapWithOverflow">删除直接转换后小于目标大小区间的文件</TextBlock>
                     </CheckBox>
 
-                    <CheckBox x:Name="FileSizeModeOutputResolutionLowerLimitCheckBox" Margin="0 4 0 4">分辨率下限</CheckBox>
+                    <CheckBox x:Name="FileSizeModeOutputResolutionLowerLimitCheckBox" 
+                              Margin="0 4 0 4"
+                              IsChecked="{Binding IsEnableResLowerLimit}">分辨率下限</CheckBox>
                     <StackPanel IsEnabled="{Binding ElementName=FileSizeModeOutputResolutionLowerLimitCheckBox, Path=IsChecked}">
 
                         <Grid>
@@ -218,17 +229,20 @@
                            HorizontalAlignment="Left">宽</Label>
                             <TextBox Grid.Column="1"
                              VerticalContentAlignment="Center"
-                             HorizontalContentAlignment="Center">1920</TextBox>
+                             HorizontalContentAlignment="Center"
+                             Text="{Binding TargetResolutionWidthLowerLimit}"/>
                             <Label Grid.Column="2"
-                           HorizontalAlignment="Left">长</Label>
+                           HorizontalAlignment="Left">高</Label>
                             <TextBox Grid.Column="3"
                              VerticalContentAlignment="Center"
-                             HorizontalContentAlignment="Center">1080</TextBox>
+                             HorizontalContentAlignment="Center"
+                             Text="{Binding TargetResolutionHeightLowerLimit}"/>
                         </Grid>
 
                         <CheckBox VerticalAlignment="Stretch" 
                           VerticalContentAlignment="Center"
-                          Margin="0 8 0 4">
+                          Margin="0 8 0 4"
+                          IsChecked="{Binding IsOutputResLimitationAdaptPortraitImage}">
                             <Label Grid.Column="1" 
                                HorizontalAlignment="Left">
                                 <TextBlock TextWrapping="WrapWithOverflow">分辨率限制自适应竖图</TextBlock>
@@ -238,18 +252,20 @@
                         <Label>
                             <TextBlock TextWrapping="WrapWithOverflow">输出图片分辨率小于下限时：</TextBlock>
                         </Label>
-                        <RadioButton IsChecked="True" 
-                                     VerticalContentAlignment="Center">
+                        <RadioButton VerticalContentAlignment="Center"
+                                     IsChecked="{Binding FileSizeFirst_DoNothing}">
                             <Label>
                                 <TextBlock TextWrapping="WrapWithOverflow">保留此图片，什么也不做</TextBlock>
                             </Label>
                         </RadioButton>
-                        <RadioButton VerticalContentAlignment="Center">
+                        <RadioButton VerticalContentAlignment="Center"
+                                     IsChecked="{Binding FileSizeFirst_Delete}">
                             <Label>
                                 <TextBlock TextWrapping="WrapWithOverflow">删除此图片</TextBlock>
                             </Label>
                         </RadioButton>
-                        <RadioButton VerticalContentAlignment="Center">
+                        <RadioButton VerticalContentAlignment="Center"
+                                     IsChecked="{Binding FileSizeFirst_IgnoreSizeLimit}">
                             <Label>
                                 <TextBlock TextWrapping="WrapWithOverflow">忽略目标大小区间限制，重新调整至分辨率下限</TextBlock>
                             </Label>
@@ -272,25 +288,29 @@
                            HorizontalAlignment="Left">宽</Label>
                         <TextBox Grid.Column="1"
                              VerticalContentAlignment="Center"
-                             HorizontalContentAlignment="Center">1920</TextBox>
+                             HorizontalContentAlignment="Center"
+                             Text="{Binding TargetResolutionWidthLowerLimit}"/>
                         <Label Grid.Column="2"
-                           HorizontalAlignment="Left">长</Label>
+                           HorizontalAlignment="Left">高</Label>
                         <TextBox Grid.Column="3"
                              VerticalContentAlignment="Center"
-                             HorizontalContentAlignment="Center">1080</TextBox>
+                             HorizontalContentAlignment="Center"
+                             Text="{Binding TargetResolutionHeightLowerLimit}"/>
                     </Grid>
 
                     <CheckBox VerticalAlignment="Stretch" 
                           VerticalContentAlignment="Center"
-                          Margin="0 8 0 4">
+                          Margin="0 8 0 4"
+                          IsChecked="{Binding IsOutputResLimitationAdaptPortraitImage}">
                         <Label HorizontalAlignment="Left">
                             <TextBlock TextWrapping="WrapWithOverflow">分辨率限制自适应竖图</TextBlock>
                         </Label>
                     </CheckBox>
 
                     <CheckBox x:Name="ResModeOutputResolutionLowerLimitCheckBox"
-                          VerticalContentAlignment="Center"
-                              Margin="0 4 0 4">
+                              VerticalContentAlignment="Center"
+                              Margin="0 4 0 4"
+                              IsChecked="{Binding IsEnableTargetSizeLimit}">
                         <Label HorizontalAlignment="Left">
                             <TextBlock TextWrapping="WrapWithOverflow">目标大小区间（KiB）</TextBlock>
                         </Label>
@@ -304,30 +324,34 @@
                             </Grid.ColumnDefinitions>
                             <TextBox Grid.Column="0"
                                  VerticalContentAlignment="Center"
-                                 HorizontalContentAlignment="Center">300</TextBox>
+                                 HorizontalContentAlignment="Center"
+                                 Text="{Binding TargetSizeLowerLimit}"/>
                             <Label Grid.Column="1" 
                                HorizontalAlignment="Left">-</Label>
                             <TextBox Grid.Column="2"
                                  VerticalContentAlignment="Center"
-                                 HorizontalContentAlignment="Center">350</TextBox>
+                                 HorizontalContentAlignment="Center"
+                                 Text="{Binding TargetSizeUpperLimit}"/>
                         </Grid>
 
                         <Label>
                             <TextBlock TextWrapping="WrapWithOverflow">输出图片文件大小超出目标大小区间时：</TextBlock>
                         </Label>
-                        <RadioButton IsChecked="True" 
-                                     VerticalContentAlignment="Center">
+                        <RadioButton VerticalContentAlignment="Center"
+                                     IsChecked="{Binding ResFirst_DoNothing}">
                             <Label>
                                 <TextBlock TextWrapping="WrapWithOverflow">保留此图片，什么也不做</TextBlock>
                             </Label>
                         </RadioButton>
-                        <RadioButton VerticalContentAlignment="Center">
+                        <RadioButton VerticalContentAlignment="Center"
+                                     IsChecked="{Binding ResFirst_Delete}">
                             <Label>
                                 <TextBlock TextWrapping="WrapWithOverflow">删除此图片</TextBlock>
                             </Label>
                         </RadioButton>
                         <RadioButton x:Name="ResModeIgnoreRadioButton" 
-                                     VerticalContentAlignment="Center">
+                                     VerticalContentAlignment="Center"
+                                     IsChecked="{Binding ResFirst_IgnoreSizeLimit}">
                             <Label>
                                 <TextBlock TextWrapping="WrapWithOverflow">忽略目标分辨率限制，重新调整至目标大小区间内</TextBlock>
                             </Label>
@@ -360,7 +384,7 @@
                                 Maximum="100" 
                                 Minimum="1" 
                                 Margin="8 0 8 0" 
-                                Value="90" 
+                                Value="{Binding Quality}" 
                                 SmallChange="1" 
                                 LargeChange="10"
                                 DockPanel.Dock="Right"
@@ -411,26 +435,35 @@
                     <TextBlock TextWrapping="WrapWithOverflow">输出文件夹</TextBlock>
                 </Label>
                 <DockPanel Height="25">
-                    <Button DockPanel.Dock="Right" Margin="4 0 0 0">选择文件夹</Button>
-                    <TextBox VerticalContentAlignment="Center">选择文件夹</TextBox>
+                    <Button DockPanel.Dock="Right" 
+                            Margin="4 0 0 0"
+                            Padding="8 0 8 0"
+                            Command="{Binding SelectOutputFolderCommand}">选择文件夹</Button>
+                    <TextBox VerticalContentAlignment="Center"
+                             Text="{Binding OutputPath}"/>
                 </DockPanel>
 
                 <Label>
                     <TextBlock TextWrapping="WrapWithOverflow">输出文件名</TextBlock>
                 </Label>
-                <TextBox VerticalContentAlignment="Center" Height="25"></TextBox>
+                <TextBox VerticalContentAlignment="Center" Height="25"
+                         Text="{Binding OutputFileNamePattern}"/>
                 <WrapPanel>
-                    <CheckBox VerticalContentAlignment="Center">
-                        <Label>原文件名&lt;name&gt;</Label>
+                    <CheckBox VerticalContentAlignment="Center"
+                              IsChecked="{Binding IsEnableOriginFileName}">
+                        <Label>原文件名 {name}</Label>
                     </CheckBox>
-                    <CheckBox VerticalContentAlignment="Center">
-                        <Label>序号&lt;index&gt;</Label>
+                    <CheckBox VerticalContentAlignment="Center"
+                              IsChecked="{Binding IsEnableIndex}">
+                        <Label>序号 {index}</Label>
                     </CheckBox>
-                    <CheckBox VerticalContentAlignment="Center">
-                        <Label>时间日期&lt;time&gt;</Label>
+                    <CheckBox VerticalContentAlignment="Center"
+                              IsChecked="{Binding IsEnableTime}">
+                        <Label>时间日期 {time}</Label>
                     </CheckBox>
-                    <CheckBox VerticalContentAlignment="Center">
-                        <Label>图片质量&lt;quality&gt;</Label>
+                    <CheckBox VerticalContentAlignment="Center"
+                              IsChecked="{Binding IsEnableQuality}">
+                        <Label>图片质量 {quality}</Label>
                     </CheckBox>
                 </WrapPanel>
 
