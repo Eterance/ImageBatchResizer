@@ -6,10 +6,11 @@
         xmlns:local="clr-namespace:ImageBatchResizer.Views"
         xmlns:converters="clr-namespace:ImageBatchResizer.Converters"
         mc:Ignorable="d"
-        Title="MainWindow" Height="600" Width="800" MinWidth="600" MinHeight="500">
+        Title="MainWindow" Height="720" Width="800" MinWidth="600" MinHeight="600">
 
     <Window.Resources>
         <converters:IsCheck2VisibilityConverter x:Key="IsCheck2VisibilityConverter"/>
+        <converters:ProgressBarValueRound x:Key="ProgressBarValueRound"/>
     </Window.Resources>
 
     <Grid>
@@ -19,6 +20,7 @@
             <RowDefinition Height="auto"/>
             <RowDefinition Height="40"/>
             <RowDefinition Height="auto"/>
+            <RowDefinition Height="20"/>
         </Grid.RowDefinitions>
 
 
@@ -73,7 +75,7 @@
             </DockPanel>
         </Grid>
 
-        <Grid Grid.Row="4" Margin="0 8 0 8">
+        <Grid Grid.Row="4" Margin="0 8 0 8" IsEnabled="{Binding IsEnableParametersPanel}">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="1*"/>
                 <ColumnDefinition Width="1*"/>
@@ -84,7 +86,8 @@
                 <CheckBox x:Name="InputResolutionUpperLimitCheckBox" 
                           VerticalAlignment="Stretch" 
                           VerticalContentAlignment="Center"
-                          Margin="4 4 4 8">
+                          Margin="4 4 4 8"
+                          IsChecked="{Binding IsEnableInputResUpperLimit}">
                     <TextBlock TextWrapping="WrapWithOverflow">分辨率上限</TextBlock>
                 </CheckBox>
                 <Grid IsEnabled="{Binding ElementName=InputResolutionUpperLimitCheckBox, Path=IsChecked}">
@@ -109,7 +112,8 @@
                 <CheckBox x:Name="InputResolutionLowerLimitCheckBox" 
                           VerticalAlignment="Stretch" 
                           VerticalContentAlignment="Center"
-                          Margin="4 4 4 8">
+                          Margin="4 4 4 8"
+                          IsChecked="{Binding IsEnableInputResLowerLimit}">
                     <TextBlock TextWrapping="WrapWithOverflow">分辨率下限</TextBlock>
                 </CheckBox>
                 <Grid IsEnabled="{Binding ElementName=InputResolutionLowerLimitCheckBox, Path=IsChecked}">
@@ -133,29 +137,36 @@
 
                 <CheckBox VerticalAlignment="Stretch" 
                           VerticalContentAlignment="Center"
-                          Margin="4 8 4 8">
+                          Margin="4 8 4 8"
+                          IsChecked="{Binding IsResLimitationAdaptPortraitImage}">
                     <TextBlock TextWrapping="WrapWithOverflow">分辨率限制自适应竖图</TextBlock>
                 </CheckBox>
 
                 <Label>读取格式</Label>
                 <WrapPanel Margin="4">
-                    <CheckBox Margin="4">Bmp</CheckBox>
-                    <CheckBox Margin="4">Jpeg</CheckBox>
-                    <CheckBox Margin="4">Png</CheckBox>
-                    <CheckBox Margin="4">Tiff</CheckBox>
-                    <CheckBox Margin="4">Tga</CheckBox>
-                    <CheckBox Margin="4">WebP</CheckBox>
+                    <CheckBox Margin="4" IsChecked="{Binding IsAcceptBmp}">Bmp</CheckBox>
+                    <CheckBox Margin="4" IsChecked="{Binding IsAcceptJpeg}">Jpeg</CheckBox>
+                    <CheckBox Margin="4" IsChecked="{Binding IsAcceptPng}">Png</CheckBox>
+                    <CheckBox Margin="4" IsChecked="{Binding IsAcceptTga}">Tga</CheckBox>
+                    <CheckBox Margin="4" IsChecked="{Binding IsAcceptTiff}">Tiff</CheckBox>
+                    <CheckBox Margin="4" IsChecked="{Binding IsAcceptWebP}">WebP</CheckBox>
                 </WrapPanel>
             </StackPanel>
 
             <StackPanel Grid.Column="1" Orientation="Vertical" Margin="8 0 8 0">
                 <Label>模式</Label>
-                <WrapPanel Orientation="Horizontal" Margin="0 4 0 4">
+                <WrapPanel Orientation="Horizontal">
                     <RadioButton x:Name="FileSizeModeRadioButton"
                                  IsChecked="True"
-                                 Margin="4">文件大小优先</RadioButton>
+                                 Margin="4"
+                                 VerticalContentAlignment="Center">
+                        <Label>文件大小优先</Label>
+                    </RadioButton>
                     <RadioButton x:Name="ResModeRadioButton"
-                                 Margin="4">分辨率优先</RadioButton>
+                                 Margin="4"
+                                 VerticalContentAlignment="Center">
+                        <Label>分辨率优先</Label> 
+                    </RadioButton>
                 </WrapPanel>
 
                 <StackPanel Orientation="Vertical"
@@ -360,17 +371,41 @@
                 <Label>
                     <TextBlock TextWrapping="WrapWithOverflow">输出格式</TextBlock>
                 </Label>
-                <ComboBox Margin="0 4 0 4"></ComboBox>
+                <ComboBox Margin="0 4 0 4"
+                          ItemsSource="{Binding FormatList}"
+                          SelectedValue="{Binding SelectedFormatModel}">
+                    <ComboBox.ItemTemplate>
+                        <DataTemplate>
+                            <TextBlock Text="{Binding Name}"/>
+                        </DataTemplate>
+                    </ComboBox.ItemTemplate>
+                </ComboBox>
 
                 <Label>
                     <TextBlock TextWrapping="WrapWithOverflow">采样算法</TextBlock>
                 </Label>
-                <ComboBox Margin="0 4 0 4"></ComboBox>
+                <ComboBox Margin="0 4 0 4"
+                          ItemsSource="{Binding ResamplerList}"
+                          SelectedValue="{Binding SelectedResamplerModel}">
+                    <ComboBox.ItemTemplate>
+                        <DataTemplate>
+                            <TextBlock Text="{Binding Name}"/>
+                        </DataTemplate>
+                    </ComboBox.ItemTemplate>
+                </ComboBox>
 
                 <Label>
                     <TextBlock TextWrapping="WrapWithOverflow">适应分辨率时的缩小策略</TextBlock>
                 </Label>
-                <ComboBox Margin="0 4 0 4"></ComboBox>
+                <ComboBox Margin="0 4 0 4"
+                          ItemsSource="{Binding ResizeModeList}"
+                          SelectedValue="{Binding SelectedResizeModeModel}">
+                    <ComboBox.ItemTemplate>
+                        <DataTemplate>
+                            <TextBlock Text="{Binding Name}"/>
+                        </DataTemplate>
+                    </ComboBox.ItemTemplate>
+                </ComboBox>
 
                 <Label>
                     <TextBlock TextWrapping="WrapWithOverflow">输出文件夹</TextBlock>
@@ -383,7 +418,7 @@
                 <Label>
                     <TextBlock TextWrapping="WrapWithOverflow">输出文件名</TextBlock>
                 </Label>
-                <TextBox VerticalContentAlignment="Center" Height="25">选择文件夹</TextBox>
+                <TextBox VerticalContentAlignment="Center" Height="25"></TextBox>
                 <WrapPanel>
                     <CheckBox VerticalContentAlignment="Center">
                         <Label>原文件名&lt;name&gt;</Label>
@@ -400,6 +435,25 @@
                 </WrapPanel>
 
             </StackPanel>
+        </Grid>
+
+        <Grid Grid.Row="5">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="1*"/>
+                <ColumnDefinition Width="1*"/>
+            </Grid.ColumnDefinitions>
+            <ProgressBar Grid.Column="0" Grid.ColumnSpan="2" x:Name="ProcessProgressBar">
+            </ProgressBar>
+            <TextBlock Text="20/1330"
+                       HorizontalAlignment="Right"
+                       VerticalAlignment="Center"
+                       Grid.Column="0"
+                       Margin="0 0 4 0"/>
+            <TextBlock Text="{Binding ElementName=ProcessProgressBar, Path=Value, Converter={StaticResource ProgressBarValueRound}}"
+                       HorizontalAlignment="Left"
+                       VerticalAlignment="Center"
+                       Grid.Column="1"
+                       Margin="4 0 0 0"/>
         </Grid>
     </Grid>
 </Window>
