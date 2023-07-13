@@ -3,6 +3,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:local="clr-namespace:ImageBatchResizer"
              xmlns:System="clr-namespace:System;assembly=mscorlib"
+             xmlns:converters="clr-namespace:ImageBatchResizer.Converters"
              StartupUri="Views/MainWindow.xaml">
     <Application.Resources>
         
@@ -279,5 +280,42 @@
 
 
         <SolidColorBrush x:Key="color_buttonMouseOver" Color="#707070"></SolidColorBrush>
+
+        <!-- 文字自动换行的 Label -->
+        <Style x:Key="WrapLabelStyle" TargetType="Label">
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Label">
+                        <Border Background="{TemplateBinding Background}"
+                            BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="{TemplateBinding BorderThickness}"
+                            Padding="{TemplateBinding Padding}">
+                            <TextBlock Text="{TemplateBinding Content}"
+                                   TextWrapping="Wrap" />
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <converters:EmptyStringToBooleanConverter x:Key="EmptyStringToBooleanConverter"/>
+        <!-- 文字自动换行的，且没有内容自动隐藏的 Label -->
+        <Style x:Key="WrapLabelAutoHideStyle" BasedOn="{StaticResource WrapLabelStyle}" TargetType="Label">
+            <Style.Triggers>
+                <!--
+                之前使用这个：
+                <DataTrigger Binding="{Binding RelativeSource={RelativeSource Self}, Path=Content.(TextBlock.Text), TargetNullValue=''}" Value="">
+                但是当 Content 是 “” 时会绑定失败，导致不能隐藏。
+                -->
+                <DataTrigger Binding="{Binding RelativeSource={RelativeSource Self}, Path=Content, Converter={StaticResource EmptyStringToBooleanConverter}}" Value="False">
+                    <Setter Property="Visibility" Value="Collapsed"/>
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+
+        <!-- 文字自动换行的，且没有内容自动隐藏的 Label -->
+        <Style x:Key="ErrorLabelStyle" BasedOn="{StaticResource WrapLabelAutoHideStyle}" TargetType="Label">
+            <Setter Property="Foreground" Value="Red" />
+        </Style>
     </Application.Resources>
 </Application>

@@ -1,0 +1,28 @@
+﻿<Window x:Class="ImageBatchResizer.Views.ConsoleWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:ImageBatchResizer.Views"
+        mc:Ignorable="d"
+        Title="ConsoleWindow" Height="450" Width="800">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="1*"/>
+            <RowDefinition Height="40"/>
+        </Grid.RowDefinitions>
+        <TextBox IsReadOnly="True"
+                 VerticalScrollBarVisibility="Auto"
+                 HorizontalScrollBarVisibility="Disabled"
+                 TextChanged="TextBox_TextChanged"
+                 TextWrapping="WrapWithOverflow"
+                 Text="{Binding ConsoleContent, Mode=OneWay}"/>
+        <Button Padding="8 0 8 0"
+                Margin="4" 
+                Grid.Row="1"
+                HorizontalAlignment="Right"
+                Command="{Binding ClearConsoleCommand}">
+            清空
+        </Button>
+    </Grid>
+</Window>

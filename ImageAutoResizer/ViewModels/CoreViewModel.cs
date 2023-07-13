@@ -1,25 +1,22 @@
-﻿using ImageBatchResizer.ViewModels;
-using System;
-using System.Collections.Generic;
+﻿using ImageBatchResizer.Models;
+using ImageBatchResizer.Views;
+using Ookii.Dialogs.Wpf;
+using Prism.Commands;
 using SixLabors.ImageSharp;
-using SixLabors.ImageSharp.Processing;
-using System.Collections.ObjectModel;
-using ImageBatchResizer.Models;
-using SixLabors.ImageSharp.Formats.Webp;
 using SixLabors.ImageSharp.Formats.Bmp;
 using SixLabors.ImageSharp.Formats.Jpeg;
 using SixLabors.ImageSharp.Formats.Png;
 using SixLabors.ImageSharp.Formats.Tga;
 using SixLabors.ImageSharp.Formats.Tiff;
-using Prism.Commands;
-using System.Windows.Input;
-using Prism.Services.Dialogs;
-using Microsoft.Win32;
-using Ookii.Dialogs.Wpf;
-using System.Linq;
-using System.Windows;
-using System.IO;
+using SixLabors.ImageSharp.Formats.Webp;
+using SixLabors.ImageSharp.Processing;
+using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Collections.Specialized;
+using System.IO;
+using System.Windows;
+using System.Windows.Input;
 
 namespace ImageBatchResizer.ViewModels
 {
@@ -68,6 +65,20 @@ namespace ImageBatchResizer.ViewModels
         private int _ProcessedCount = 0;
         private string _ProcessedInstruction = "0/0";
         private double _ProcessedPercent = 0;
+        private List<string> _SupportedExtensions = new List<string>()
+        {
+            ".bmp",
+            ".jpeg",
+            ".jpg",
+            ".png",
+            ".tga",
+            ".tiff",
+            ".tif",
+            ".webp"
+        };
+        private FileModel? _SelectedPath;
+        private string _OuputPathErrorContent = "";
+        private string _ConsoleContent;
 
         public bool IsEnableParametersPanel
         {
@@ -489,6 +500,34 @@ namespace ImageBatchResizer.ViewModels
 
         #endregion
 
+        #region 错误Label
+        public string OuputPathErrorContent
+        {
+            get => _OuputPathErrorContent;
+            set
+            {
+                SetValue(ref _OuputPathErrorContent, value);
+            }
+        }
+
+        #endregion
+
+        public string ConsoleContent
+        {
+            get => _ConsoleContent;
+            private set
+            {
+                SetValue(ref _ConsoleContent, value);
+            }
+        }
+
+        private void Append2Console(string message)
+        {
+            ConsoleContent = $"{ConsoleContent}\n\n{DateTime.Now} {message}";
+        }
+
+        #region 处理中
+
         public int ProcessedCount
         {
             get => _ProcessedCount;
@@ -514,7 +553,26 @@ namespace ImageBatchResizer.ViewModels
             }
         }
 
+        #endregion
+
+        public FileModel? SelectedPath
+        {
+            get => _SelectedPath;
+            set
+            {
+                SetValue(ref _SelectedPath, value);
+            }
+        }
+
         public ObservableCollection<FileModel> InputFileList { get; set; } = new();
+        public DelegateCommand AppendFilesCommand { get; private set; }
+        public DelegateCommand OpenConsoleCommand { get; }
+        public DelegateCommand DeleteChosenCommand { get; }
+        public DelegateCommand DeleteAllCommand { get; }
+        public DelegateCommand StartCommand { get; }
+        public DelegateCommand ClearConsoleCommand { get; }
+        public DelegateCommand ResetOuputPathErrorContentCommand { get; }
+
         private void OnCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
         {
             ProcessedInstruction = @$"{ProcessedCount}/{InputFileList.Count}";
@@ -530,6 +588,7 @@ namespace ImageBatchResizer.ViewModels
 
         public CoreViewModel()
         {
+            Append2Console("正在初始化");
             InitFormatList();
             InitResamplerList();
             InitResizeModeList();
@@ -537,9 +596,96 @@ namespace ImageBatchResizer.ViewModels
             {
                 var dlg = new VistaFolderBrowserDialog();
                 var result = dlg.ShowDialog();
-                if (result == true) OutputPath = dlg.SelectedPath;
+                if (result == true)
+                {
+                    OutputPath = dlg.SelectedPath;
+                }
             });
             InputFileList.CollectionChanged += OnCollectionChanged;
+            AppendFilesCommand = new DelegateCommand(() =>
+            {
+                var dialog = new VistaOpenFileDialog();
+                dialog.Multiselect = true;
+                dialog.CheckFileExists = true;
+                var result = dialog.ShowDialog();
+                if (result == true)
+                {
+                    HandleAppendFiles(dialog.FileNames);
+                }
+            });
+            OpenConsoleCommand = new DelegateCommand(() =>
+            {
+                if (ConsoleWindow.SingleConsoleWindow == null)
+                {
+                    ConsoleWindow.SingleConsoleWindow = new(this);
+                }
+                ConsoleWindow.SingleConsoleWindow.Show();
+            });
+            DeleteChosenCommand = new DelegateCommand(() => 
+            {
+                if (SelectedPath != null) 
+                {
+                    InputFileList.Remove(SelectedPath);
+                }
+            });
+            DeleteAllCommand = new DelegateCommand(() =>
+            {
+                InputFileList.Clear();
+            });
+            StartCommand = new DelegateCommand(Start);
+            ClearConsoleCommand = new DelegateCommand(() => ConsoleContent = "");
+            ResetOuputPathErrorContentCommand = new DelegateCommand(() => OuputPathErrorContent = "");
+
+            Append2Console("初始化完毕");
+        }
+
+        private void Start()
+        {
+            // 锁定可编辑的参数
+            IsEnableParametersPanel = false;
+            if (CheckParameterLegitimacy() == false)
+            {
+                IsEnableParametersPanel = true;
+            }
+            else 
+            {
+                IsEnableParametersPanel = true;
+            }
+
+        }
+
+        private bool CheckParameterLegitimacy()
+        {
+            var result = true;
+            result = CheckOutputPathLegitimacy();
+            return result;
+        }
+
+        private bool CheckOutputPathLegitimacy() 
+        {
+            var result = true;
+            OutputPath = OutputPath.Trim();
+            if (Directory.Exists(OutputPath) == false)
+            {
+                try
+                {
+                    Directory.CreateDirectory(OutputPath);
+                    Append2Console($"已创建文件夹\"{OutputPath}\"");
+                }
+                catch (Exception ex)
+                {
+                    Append2Console($"文件夹\"{OutputPath}\"不存在，或者路径不合法。\n{ex}");
+                    OuputPathErrorContent = $"文件夹\"{OutputPath}\"不存在，或者路径不合法。";
+                    return false;
+                }
+            }
+            if (Directory.GetFiles(OutputPath).Length != 0)
+            {
+                Append2Console($"文件夹\"{OutputPath}\"不为空");
+                OuputPathErrorContent = $"文件夹\"{OutputPath}\"不为空";
+                result = false;
+            }
+            return result;
         }
 
         // https://stackoverflow.com/questions/40104765/bind-event-in-mvvm-and-pass-event-arguments-as-command-parameter
@@ -549,19 +695,22 @@ namespace ImageBatchResizer.ViewModels
             if (e.Data.GetDataPresent(DataFormats.FileDrop))
             {
                 string[] filesOrFolders = (string[])e.Data.GetData(DataFormats.FileDrop);
-                foreach (string file in filesOrFolders) 
-                {
-                    HandleDropFiles(file); 
-                }
+                HandleAppendFiles(filesOrFolders);
             }
         }
 
-        private void HandleDropFiles(string path)
+        private void HandleAppendFiles(string[] paths)
         {
-            if (File.Exists(path) && !IsInputFileListAlreadyContains(path))
+            int added = 0;
+            foreach (string path in paths)
             {
-                InputFileList.Add(new(Path.GetFileName(path), path));
+                if (File.Exists(path) && !IsInputFileListAlreadyContains(path) && IsSupportExtension(path))
+                {
+                    added++;
+                    InputFileList.Add(new(Path.GetFileName(path), path));
+                }
             }
+            Append2Console($"试图添加 {paths.Length} 个文件，实际添加 {added} 个");
         }
 
         private bool IsInputFileListAlreadyContains(string path)
@@ -569,6 +718,18 @@ namespace ImageBatchResizer.ViewModels
             foreach (var file in InputFileList)
             {
                 if (file.Path == path)
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        private bool IsSupportExtension(string filePath)
+        {
+            foreach (var ext in _SupportedExtensions)
+            {
+                if (Path.GetExtension(filePath) == ext)
                 {
                     return true;
                 }
