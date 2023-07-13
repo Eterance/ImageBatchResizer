@@ -3,7 +3,9 @@ using ImageBatchResizer.Views;
 using Ookii.Dialogs.Wpf;
 using Prism.Commands;
 using SixLabors.ImageSharp;
+using SixLabors.ImageSharp.Compression.Zlib;
 using SixLabors.ImageSharp.Formats.Bmp;
+using SixLabors.ImageSharp.Formats.Gif;
 using SixLabors.ImageSharp.Formats.Jpeg;
 using SixLabors.ImageSharp.Formats.Png;
 using SixLabors.ImageSharp.Formats.Tga;
@@ -79,6 +81,12 @@ namespace ImageBatchResizer.ViewModels
         private FileModel? _SelectedPath;
         private string _OuputPathErrorContent = "";
         private string _ConsoleContent;
+        private int _SliderMinimum = 100;
+        private int _SliderMaximum = 1;
+        private string _CompressDescrption = "有损压缩质量";
+        private bool _IsEnableCompressAdjust = true;
+        private bool _IsWebpLossyMode = true;
+        private bool _IsWebpEncoder = true;
 
         public bool IsEnableParametersPanel
         {
@@ -341,6 +349,62 @@ namespace ImageBatchResizer.ViewModels
                 SetValue(ref _quality, value);
             }
         }
+        public bool IsEnableCompressAdjust
+        {
+            get => _IsEnableCompressAdjust;
+            set
+            {
+                SetValue(ref _IsEnableCompressAdjust, value);
+            }
+        }
+        public bool IsWebpEncoder
+        {
+            get => _IsWebpEncoder;
+            set
+            {
+                SetValue(ref _IsWebpEncoder, value);
+            }
+        }
+        public bool IsWebpLossyMode
+        {
+            get => _IsWebpLossyMode;
+            set
+            {
+                SetValue(ref _IsWebpLossyMode, value);
+                if (IsWebpLossyMode)
+                {
+                    LossyCompressUI();
+                }
+                else 
+                {
+                    LosslessCompressUI();
+                }
+            }
+        }
+        public int SliderMinimum
+        {
+            get => _SliderMinimum;
+            set
+            {
+                SetValue(ref _SliderMinimum, value);
+            }
+        }
+        public int SliderMaximum
+        {
+            get => _SliderMaximum;
+            set
+            {
+                SetValue(ref _SliderMaximum, value);
+            }
+        }
+        public string CompressDescrption
+        {
+            get => _CompressDescrption;
+            set
+            {
+                SetValue(ref _CompressDescrption, value);
+            }
+        }
         public ObservableCollection<FormatModel> FormatList { get; set; }
 
         public FormatModel SelectedFormatModel
@@ -349,20 +413,57 @@ namespace ImageBatchResizer.ViewModels
             set
             {
                 SetValue(ref _selectedFormatModel, value);
+                if (value.Name == ".webp")
+                {
+                    IsWebpEncoder = true;
+                }
+                else 
+                {
+                    IsWebpEncoder = false;
+                }
+                // 根据编码器的不同，改变压缩的描述
+                if (value.Name == ".jpg" || (value.Name == ".webp" && IsWebpLossyMode))
+                {
+                    LossyCompressUI();
+                }
+                else if(value.Name == ".png" || value.Name == ".tif" || (value.Name == ".webp" && !IsWebpLossyMode))
+                {
+                    LosslessCompressUI();
+                }
+                else
+                {
+                    IsEnableCompressAdjust = false;
+                }
             }
+        }
+
+        private void LossyCompressUI()
+        {
+            IsEnableCompressAdjust = true;
+            CompressDescrption = "有损压缩质量";
+            SliderMaximum = 100;
+            SliderMinimum = 0;
+        }
+
+        private void LosslessCompressUI()
+        {
+            IsEnableCompressAdjust = true;
+            CompressDescrption = "无损压缩等级";
+            SliderMaximum = 9;
+            SliderMinimum = 0;
         }
 
         private void InitFormatList()
         {
             FormatList = new ObservableCollection<FormatModel>
             {
-                new("Bmp", new BmpEncoder()),
-                new("Jpeg", new JpegEncoder()),
-                new("Png", new PngEncoder()),
-                new("Tga", new TgaEncoder()),
-                new("Tiff", new TiffEncoder())
+                new(".bmp", new BmpEncoder()),
+                new(".jpg", new JpegEncoder()),
+                new(".png", new PngEncoder()),
+                new(".tga", new TgaEncoder()),
+                new(".tif", new TiffEncoder())
             };
-            SelectedFormatModel = new("Webp", new WebpEncoder());
+            SelectedFormatModel = new(".webp", new WebpEncoder());
             FormatList.Add(SelectedFormatModel);
         }
 
@@ -534,6 +635,7 @@ namespace ImageBatchResizer.ViewModels
             set
             {
                 SetValue(ref _ProcessedCount, value);
+                UpdateProcessedPercent();
             }
         }
         public string ProcessedInstruction
@@ -575,6 +677,12 @@ namespace ImageBatchResizer.ViewModels
 
         private void OnCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
         {
+            UpdateProcessedPercent();
+        }
+
+        private void UpdateProcessedPercent()
+        {
+
             ProcessedInstruction = @$"{ProcessedCount}/{InputFileList.Count}";
             try
             {
@@ -686,6 +794,118 @@ namespace ImageBatchResizer.ViewModels
                 result = false;
             }
             return result;
+        }
+
+        private void MainProcess() 
+        {
+            List<string> list = new List<string>();
+            if (IsAcceptBmp) list.Add(".bmp");
+            if (IsAcceptJpeg) list.Add(".jpg"); list.Add(".jpeg");
+            if (IsAcceptPng) list.Add(".png");
+            if (IsAcceptTga) list.Add(".tga");
+            if (IsAcceptTiff) list.Add(".tif"); list.Add(".tiff");
+            if (IsAcceptWebP) list.Add(".webp");
+            foreach (var item in InputFileList)
+            {
+                var originalExt = Path.GetExtension(item.Name);
+                if (originalExt != null && list.Contains(originalExt) == false)
+                {
+                    Append2Console($"{item} 扩展名不在允许读取的格式中，跳过");
+                    ProcessedCount++;
+                    continue;
+                }
+                var imageInfo = Image.Identify(item.Path);
+                var originWidth = imageInfo.Width;
+                var originHeigth = imageInfo.Height;
+                // 限制适应竖图
+                int inputResUpperLimitWidth = InputResUpperLimitWidth;
+                int inputResUpperLimitHeight = InputResUpperLimitHeight;
+                int inputResLowerLimitWidth = InputResLowerLimitWidth;
+                int inputResLowerLimitHeight = InputResLowerLimitHeight;
+                if (IsInputResLimitationAdaptPortraitImage && (originHeigth > originWidth))
+                {
+                    inputResUpperLimitWidth = InputResUpperLimitHeight;
+                    inputResUpperLimitHeight = InputResUpperLimitWidth;
+                    inputResLowerLimitWidth = InputResLowerLimitHeight;
+                    inputResLowerLimitHeight = InputResLowerLimitWidth;
+                }
+                // 跳过不在分辨率限制内的
+                if (IsEnableInputResUpperLimit && (originWidth > inputResUpperLimitWidth || originHeigth > inputResUpperLimitHeight))
+                {
+                    Append2Console($"{item} 大小（{originWidth} × {originHeigth}）超出上限，跳过");
+                    ProcessedCount++;
+                    continue;
+                }
+                if (IsEnableInputResLowerLimit && (originWidth < inputResLowerLimitWidth || originHeigth < inputResLowerLimitHeight))
+                {
+                    Append2Console($"{item} 大小（{originWidth} × {originHeigth}）低于下限，跳过");
+                    ProcessedCount++;
+                    continue;
+                }
+                var multiple_upper = 1.00;
+                var multiple_lower = 0.10;
+                var current_multiple = 1;
+                var disk_cost = 0;
+                var start_time = DateTime.Now;
+                var temp_filename = Path.Combine(OutputPath, $"temp{SelectedFormatModel.Name}");
+                // 设置编码器参数
+                SetupSelectedEncoder();
+                try
+                {
+                    using (Image originImage = Image.Load(item.Path))
+                    {
+                        Append2Console($"{item.Name} 开始处理");
+                        if (IsFileSizeFirstMode)
+                        {
+                            // 先尝试原尺寸压缩，如果满足要求就不用缩小了
+                            originImage.Save(temp_filename, SelectedFormatModel.Encoder);
+                            long fileSizeInBytes = new FileInfo(temp_filename).Length;
+                            Append2Console($"{item.Name} 直接保存的大小：{fileSizeInBytes / 1024} KiB");
+                        }
+                        else 
+                        {
+                            //todo
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    //todo
+                }
+            }
+        }
+
+        private void SetupSelectedEncoder()
+        {
+            if (SelectedFormatModel.Name == ".webp")
+            {
+                SelectedFormatModel.Encoder = new WebpEncoder()
+                {
+                    FileFormat = (IsWebpLossyMode) ? WebpFileFormatType.Lossy : WebpFileFormatType.Lossless,
+                    Quality = Quality
+                };
+            }
+            else if (SelectedFormatModel.Name == ".jpg")
+            {
+                SelectedFormatModel.Encoder = new JpegEncoder()
+                {
+                    Quality = Quality
+                };
+            }
+            else if (SelectedFormatModel.Name == ".png")
+            {
+                SelectedFormatModel.Encoder = new PngEncoder()
+                {
+                    CompressionLevel = (PngCompressionLevel)Quality
+                };
+            }
+            else if (SelectedFormatModel.Name == ".tif")
+            {
+                SelectedFormatModel.Encoder = new TiffEncoder()
+                {
+                    CompressionLevel = (DeflateCompressionLevel)Quality
+                };
+            }
         }
 
         // https://stackoverflow.com/questions/40104765/bind-event-in-mvvm-and-pass-event-arguments-as-command-parameter

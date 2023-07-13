@@ -489,24 +489,6 @@
             </StackPanel>
 
             <StackPanel Grid.Column="2" Orientation="Vertical" Margin="8 0 8 0">
-                <Label Style="{StaticResource WrapLabelStyle}" Content="图片质量"/>
-                <DockPanel Margin="0 4 0 4">
-                    <TextBox Width="40" 
-                                 HorizontalContentAlignment="Center"
-                                 DockPanel.Dock="Left"
-                                 Text="{Binding ElementName=QualitySlider, Path=Value}"/>
-                    <Slider x:Name="QualitySlider" 
-                                Maximum="100" 
-                                Minimum="1" 
-                                Margin="8 0 8 0" 
-                                Value="{Binding Quality}" 
-                                SmallChange="1" 
-                                LargeChange="10"
-                                DockPanel.Dock="Right"
-                                IsSnapToTickEnabled="True"
-                                TickFrequency="1"/>
-                </DockPanel>
-
                 <Label Style="{StaticResource WrapLabelStyle}" Content="输出格式"/>
                 <ComboBox Margin="0 4 0 4"
                           ItemsSource="{Binding FormatList}"
@@ -518,6 +500,42 @@
                     </ComboBox.ItemTemplate>
                 </ComboBox>
 
+                <Label Style="{StaticResource WrapLabelStyle}" 
+                       Content="Webp 压缩模式"
+                       Visibility="{Binding IsWebpEncoder, Converter={StaticResource IsCheck2VisibilityConverter}}"/>
+                <WrapPanel Orientation="Horizontal"
+                           Visibility="{Binding IsWebpEncoder, Converter={StaticResource IsCheck2VisibilityConverter}}">
+                    <RadioButton IsChecked="{Binding IsWebpLossyMode}"
+                                 Margin="4"
+                                 VerticalContentAlignment="Center">
+                        <Label>有损</Label>
+                    </RadioButton>
+                    <RadioButton Margin="4"
+                                 VerticalContentAlignment="Center">
+                        <Label>无损</Label>
+                    </RadioButton>
+                </WrapPanel>
+
+                <Label Style="{StaticResource WrapLabelStyle}" 
+                       Content="{Binding CompressDescrption}" 
+                       Visibility="{Binding IsEnableCompressAdjust, Converter={StaticResource IsCheck2VisibilityConverter}}"/>
+                <DockPanel Margin="0 4 0 4"
+                           Visibility="{Binding IsEnableCompressAdjust, Converter={StaticResource IsCheck2VisibilityConverter}}">
+                    <TextBox Width="40" 
+                                 HorizontalContentAlignment="Center"
+                                 DockPanel.Dock="Left"
+                                 Text="{Binding ElementName=QualitySlider, Path=Value}"/>
+                    <Slider x:Name="QualitySlider" 
+                                Maximum="{Binding SliderMaximum}" 
+                                Minimum="{Binding SliderMinimum}" 
+                                Margin="8 0 8 0" 
+                                Value="{Binding Quality}" 
+                                SmallChange="1" 
+                                LargeChange="5"
+                                DockPanel.Dock="Right"
+                                IsSnapToTickEnabled="True"
+                                TickFrequency="1"/>
+                </DockPanel>
 
                 <Label Style="{StaticResource WrapLabelStyle}" Content="采样算法"/>
                 <ComboBox Margin="0 4 0 4"
