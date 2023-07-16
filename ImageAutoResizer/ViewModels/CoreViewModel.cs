@@ -923,25 +923,29 @@ namespace ImageBatchResizer.ViewModels
                 var temp_filename = Path.Combine(OutputPath, $"temp{SelectedFormatModel.Name}");
                 // 设置编码器参数
                 SetupSelectedEncoder();
-                try
+
+                using (Image originImage = await Image.LoadAsync(item.Path))
                 {
-                    using (Image originImage = Image.Load(item.Path))
+                    Append2Console($"{item.Name} 开始处理");
+                    using (MemoryStream memoryStream = new MemoryStream())
                     {
-                        Append2Console($"{item.Name} 开始处理");
                         if (IsFileSizeFirstMode)
                         {
                             // 先尝试原尺寸压缩，如果满足要求就不用缩小了
-                            await originImage.SaveAsync(temp_filename, SelectedFormatModel.Encoder, token);
-                            long fileSizeInBytes = new FileInfo(temp_filename).Length;
-                            disk_cost += fileSizeInBytes;
-                            total_disk_cost += disk_cost;
+                            //var st1 = DateTime.Now;
+                            await originImage.SaveAsync(memoryStream, SelectedFormatModel.Encoder, token);
+                            //Append2Console($"SaveAsync RAM: {(DateTime.Now - st1).TotalSeconds} 秒");
+
+                            long fileSizeInBytes = memoryStream.Length;
+                            //disk_cost += fileSizeInBytes;
+                            //total_disk_cost += disk_cost;
                             Append2Console($"{item.Name} 分辨率未改变 ({originWidth}×{originHeigth})，直接保存的大小：{Math.Round((double)fileSizeInBytes / 1024, 3)} KiB");
                             if (fileSizeInBytes < TargetSizeUpperLimit)
                             {
                                 item.Processed = true;
                                 if (fileSizeInBytes < TargetSizeLowerLimit && IsDeleteSmallerThanTarget)
                                 {
-                                    File.Delete(temp_filename);
+                                    //File.Delete(temp_filename);
                                     Append2Console($"{item.Name} 直接转换的结果被删除，因为小于文件大小区间。");
                                     Append2Console($"耗时：{(DateTime.Now - start_time).TotalSeconds} 秒，磁盘写入 {Math.Round((double)disk_cost / 1024, 3)} KiB");
                                     item.Processed = true;
@@ -951,26 +955,27 @@ namespace ImageBatchResizer.ViewModels
                                 else
                                 {
                                     var final_filename = Path.Combine(OutputPath, $"{RenameResult(success_index, Path.GetFileNameWithoutExtension(item.Name))}{SelectedFormatModel.Name}");
-                                    File.Move(temp_filename, final_filename);
+                                    File.WriteAllBytes(final_filename, memoryStream.ToArray());
+                                    disk_cost += memoryStream.Length;
+                                    total_disk_cost += disk_cost;
                                     item.ResizedPath = final_filename;
                                     success_index++;
-                                    Append2Console($"已保存至 {final_filename}");
-                                    Append2Console($"耗时：{(DateTime.Now - start_time).TotalSeconds} 秒");
+                                    Append2Console($"已保存至 {final_filename}，耗时：{(DateTime.Now - start_time).TotalSeconds} 秒，磁盘写入 {Math.Round((double)disk_cost / 1024, 3)} KiB");
                                     item.Processed = true;
                                     ProcessedCount++;
                                     continue;
                                 }
                             }
-                            else 
+                            else
                             {
-                                (bool isQuit, int resized_width, int resized_height, long shrink_disk_cost) = await BinarySearchShrink(originImage, SelectedFormatModel.Encoder, temp_filename, token);
+                                (bool isQuit, int resized_width, int resized_height, _) = await BinarySearchShrink(originImage, SelectedFormatModel.Encoder, memoryStream, token);
                                 if (isQuit)
                                 {
                                     Append2Console($"处理已被中止。");
                                     break;
                                 }
-                                disk_cost += shrink_disk_cost;
-                                total_disk_cost += disk_cost;
+                                //disk_cost += shrink_disk_cost;
+                                //total_disk_cost += disk_cost;
                                 if (IsEnableResLowerLimit)
                                 {
                                     (bool isUnder, int true_width_limit, int true_height_limit) = IsUnderResolutionLimit(resized_width, resized_height);
@@ -978,7 +983,7 @@ namespace ImageBatchResizer.ViewModels
                                     {
                                         if (FileSizeFirst_Delete)
                                         {
-                                            File.Delete(temp_filename);
+                                            //File.Delete(temp_filename);
                                             Append2Console($"{item.Name} 转换的结果被删除。");
                                             Append2Console($"耗时：{(DateTime.Now - start_time).TotalSeconds} 秒，磁盘写入 {Math.Round((double)disk_cost / 1024, 3)} KiB");
                                             item.Processed = true;
@@ -993,25 +998,28 @@ namespace ImageBatchResizer.ViewModels
                                                 Mode = SelectedResizeModeModel.Mode,
                                                 Sampler = SelectedResamplerModel.Resampler,
                                             }));
-                                            await image_processed.SaveAsync(temp_filename, SelectedFormatModel.Encoder, token);
+                                            memoryStream.SetLength(0);
+                                            await image_processed.SaveAsync(memoryStream, SelectedFormatModel.Encoder, token);
                                             // 重新读取一下实际处理后的边长
-                                            imageInfo = await Image.IdentifyAsync(temp_filename);
+                                            memoryStream.Position = 0;
+                                            imageInfo = await Image.IdentifyAsync(memoryStream);
                                             resized_width = imageInfo.Width;
                                             resized_height = imageInfo.Height;
-                                            fileSizeInBytes = new FileInfo(temp_filename).Length;
+                                            fileSizeInBytes = memoryStream.Length;
                                             var width_percentage = ((resized_width / (double)originImage.Width) * 100).ToString("f2");
                                             var height_percentage = ((resized_height / (double)originImage.Height) * 100).ToString("f2");
                                             var pixel_percentage = ((resized_width * resized_height) / (double)(originImage.Width * originImage.Height) * 100).ToString("f2");
                                             Append2Console($"分辨率重新设置为 {resized_width}×{resized_height}, {width_percentage}% 宽 {height_percentage}% 高, {pixel_percentage}% 像素, {Math.Round((double)fileSizeInBytes / 1024, 3)} KiB");
-                                            var file_size = new FileInfo(temp_filename).Length;
-                                            disk_cost += file_size;
-                                            total_disk_cost += fileSizeInBytes;
+                                            //disk_cost += file_size;
+                                            //total_disk_cost += fileSizeInBytes;
                                         }
                                         // 不做处理
                                     }
                                 }
-                                var final_filename = Path.Combine(OutputPath, $"{RenameResult(success_index, Path.GetFileNameWithoutExtension(item.Name))}{SelectedFormatModel.Name}"); 
-                                File.Move(temp_filename, final_filename);
+                                var final_filename = Path.Combine(OutputPath, $"{RenameResult(success_index, Path.GetFileNameWithoutExtension(item.Name))}{SelectedFormatModel.Name}");
+                                File.WriteAllBytes(final_filename, memoryStream.ToArray());
+                                disk_cost += memoryStream.Length;
+                                total_disk_cost += disk_cost;
                                 item.ResizedPath = final_filename;
                                 success_index++;
                                 Append2Console($"已保存至 {final_filename}，耗时：{(DateTime.Now - start_time).TotalSeconds} 秒，磁盘写入 {Math.Round((double)disk_cost / 1024, 3)} KiB");
@@ -1020,22 +1028,18 @@ namespace ImageBatchResizer.ViewModels
                                 continue;
                             }
                         }
-                        else 
+                        else
                         {
                             //todo
                         }
                     }
-                }
-                catch (Exception ex)
-                {
-                    MessageBox.Show(ex.Message);
                 }
             }
 
             Append2Console($"已处理 {ProcessedCount} 个，保存 {--success_index} 个，总耗时：{(DateTime.Now - total_start_time).TotalSeconds} 秒，磁盘总写入 {Math.Round((double)total_disk_cost / 1024, 3)} KiB");
         }
 
-        private async Task<(bool, int, int, long)> BinarySearchShrink(Image originImage, ImageEncoder encoder, string tempFilename, CancellationToken token = default)
+        private async Task<(bool, int, int, long)> BinarySearchShrink(Image originImage, ImageEncoder encoder, MemoryStream memoryStream, CancellationToken token = default)
         {
             double multiple_upper = 1.00;
             double multiple_lower = 0.10;
@@ -1048,14 +1052,6 @@ namespace ImageBatchResizer.ViewModels
             {
                 if (token.IsCancellationRequested == true)
                 {
-                    try
-                    {
-                        File.Delete(tempFilename);
-                    }
-                    catch
-                    {
-                        // Ignore
-                    }
                     return (true, 0, 0, 0);
                 }
                 current_multiple = (multiple_upper + multiple_lower) / 2;
@@ -1067,11 +1063,13 @@ namespace ImageBatchResizer.ViewModels
                     Mode = SelectedResizeModeModel.Mode,
                     Sampler = SelectedResamplerModel.Resampler,
                 }));
-                await image_processed.SaveAsync(tempFilename, encoder, token);
-                long fileSizeInBytes = new FileInfo(tempFilename).Length;
+                memoryStream.SetLength(0);
+                await image_processed.SaveAsync(memoryStream, encoder, token);
+                long fileSizeInBytes = memoryStream.Length;
                 disk_cost += fileSizeInBytes;
                 // 重新读取一下实际处理后的边长
-                var imageInfo = await Image.IdentifyAsync(tempFilename);
+                memoryStream.Position = 0;
+                ImageInfo imageInfo = await Image.IdentifyAsync(memoryStream);
                 resized_width = imageInfo.Width;
                 resized_height = imageInfo.Height;
                 var width_percentage = ((resized_width / (double)originImage.Width) * 100).ToString("f2");
