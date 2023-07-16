@@ -31,5 +31,10 @@ namespace ImageBatchResizer.Views
         {
             ((TextBox)sender).ScrollToEnd();
         }
+
+        private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
+        {
+            SingleConsoleWindow = null;
+        }
     }
 }

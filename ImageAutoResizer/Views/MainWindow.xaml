@@ -14,6 +14,7 @@
     <Window.Resources>
         <converters:IsCheck2VisibilityConverter x:Key="IsCheck2VisibilityConverter"/>
         <converters:ProgressBarValueRound x:Key="ProgressBarValueRound"/>
+        <converters:BoolInvertConverter x:Key="BoolInvertConverter"/>
 
         <ItemsPanelTemplate x:Key="ListBoxItemsPanel2">
             <StackPanel Orientation="Vertical">
@@ -150,7 +151,7 @@
         </ListBox>
 
         <DataGrid Grid.Row="0"
-                  IsEnabled="{Binding IsEnableParametersPanel}"
+                  IsReadOnly="{Binding IsEnableParametersPanel, Converter={StaticResource BoolInvertConverter}}"
                   AllowDrop="True"
                   ItemsSource="{Binding InputFileList}"
                   SelectedItem="{Binding Path=SelectedPath, Mode=TwoWay}"
@@ -163,6 +164,7 @@
                 <DataGridTextColumn Header="文件名" IsReadOnly="True" Binding="{Binding Name}"/>
                 <DataGridTextColumn Header="路径" IsReadOnly="True" Binding="{Binding Path}" />
                 <DataGridTextColumn Header="转换后路径" IsReadOnly="True" Binding="{Binding ResizedPath}" />
+                <DataGridCheckBoxColumn Header="已处理" IsReadOnly="{Binding IsEnableParametersPanel, Converter={StaticResource BoolInvertConverter}}" Binding="{Binding Processed}" />
             </DataGrid.Columns>
             <!-- https://stackoverflow.com/questions/40104765/bind-event-in-mvvm-and-pass-event-arguments-as-command-parameter -->
             <i:Interaction.Triggers>
@@ -185,9 +187,9 @@
                 <Button Padding="8 0 8 0"
                         Margin="4" 
                         DockPanel.Dock="Right"
-                        Command="{Binding StartCommand}">
-                    开始转换
-                </Button>
+                        Command="{Binding StartCommand}"
+                        IsEnabled="{Binding IsEnableStartButton}"
+                        Content="{Binding StartButtonContent}"/>
                 <Button Padding="8 0 8 0"
                         Margin="4" 
                         DockPanel.Dock="Right"
@@ -214,6 +216,13 @@
                         Command="{Binding DeleteAllCommand}"
                         IsEnabled="{Binding IsEnableParametersPanel}">
                     删除全部
+                </Button>
+                <Button Padding="8 0 8 0"
+                        Margin="4" 
+                        DockPanel.Dock="Left"
+                        Command="{Binding ResetAllCommand}"
+                        IsEnabled="{Binding IsEnableParametersPanel}">
+                    重置状态
                 </Button>
             </DockPanel>
         </Grid>
