@@ -3,26 +3,53 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:converters="clr-namespace:ImageBatchResizer.Converters"
         xmlns:local="clr-namespace:ImageBatchResizer.Views"
         mc:Ignorable="d"
-        Title="ConsoleWindow" Height="450" Width="800" Closing="Window_Closing">
+        WindowStyle="SingleBorderWindow"
+        Title="ConsoleWindow" Height="450" Width="800" Closing="Window_Closing" Activated="Window_Activated">
+    <Window.Resources>
+        <converters:IsCheck2VisibilityConverter x:Key="IsCheck2VisibilityConverter"/>
+    </Window.Resources>
+    
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="1*"/>
             <RowDefinition Height="40"/>
         </Grid.RowDefinitions>
         <TextBox IsReadOnly="True"
+                 Visibility="{Binding ElementName=LiteConsoleRadioButton, Path=IsChecked, Converter={StaticResource IsCheck2VisibilityConverter}}"
                  VerticalScrollBarVisibility="Auto"
                  HorizontalScrollBarVisibility="Disabled"
                  TextChanged="TextBox_TextChanged"
                  TextWrapping="WrapWithOverflow"
-                 Text="{Binding ConsoleContent, Mode=OneWay}"/>
-        <Button Padding="8 0 8 0"
-                Margin="4" 
-                Grid.Row="1"
-                HorizontalAlignment="Right"
-                Command="{Binding ClearConsoleCommand}">
-            清空
-        </Button>
+                 Text="{Binding LiteConsoleContent, Mode=OneWay}"/>
+        <TextBox IsReadOnly="True"
+                 Visibility="{Binding ElementName=FullConsoleRadioButton, Path=IsChecked, Converter={StaticResource IsCheck2VisibilityConverter}}"
+                 VerticalScrollBarVisibility="Auto"
+                 HorizontalScrollBarVisibility="Disabled"
+                 TextChanged="TextBox_TextChanged"
+                 TextWrapping="WrapWithOverflow"
+                 Text="{Binding FullConsoleContent, Mode=OneWay}"/>
+        <DockPanel Grid.Row="1">
+            <Button Padding="8 0 8 0"
+                    DockPanel.Dock="Right"
+                    Margin="4" 
+                    HorizontalAlignment="Right"
+                    Command="{Binding ClearConsoleCommand}">
+                清空
+            </Button>
+            <RadioButton x:Name="LiteConsoleRadioButton"
+                         IsChecked="True"
+                         VerticalContentAlignment="Center"
+                         Margin="8 0 0 0">
+                <Label Style="{StaticResource WrapLabelStyle}" Content="精简"/>
+            </RadioButton>
+            <RadioButton x:Name="FullConsoleRadioButton"
+                         VerticalContentAlignment="Center"
+                         Margin="8 0 0 0">
+                <Label Style="{StaticResource WrapLabelStyle}" Content="完整"/>
+            </RadioButton>
+        </DockPanel>
     </Grid>
 </Window>

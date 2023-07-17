@@ -8,7 +8,7 @@
         xmlns:converters="clr-namespace:ImageBatchResizer.Converters"
         xmlns:controls="clr-namespace:ImageBatchResizer.Controls"
         mc:Ignorable="d"
-        Title="MainWindow" Height="720" Width="800" MinWidth="600" MinHeight="600">
+        Title="MainWindow" Height="720" Width="800" MinWidth="800" MinHeight="600">
     <!-- xmlns:i https://stackoverflow.com/questions/20743961/the-name-interaction-does-not-exist-in-the-namespace-http-schemas-microsoft -->
 
     <Window.Resources>
@@ -200,7 +200,7 @@
                 <Button Padding="8 0 8 0"
                         Margin="4" 
                         DockPanel.Dock="Left"
-                        Command="{Binding OpenConsoleCommand}">
+                        Click="OpenConsole_Click">
                     控制台
                 </Button>
                 <Button Padding="8 0 8 0"
@@ -229,6 +229,7 @@
 
         <Grid Grid.Row="2" Margin="0 8 0 8" IsEnabled="{Binding IsEnableParametersPanel}">
             <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="1*"/>
                 <ColumnDefinition Width="1*"/>
                 <ColumnDefinition Width="1*"/>
                 <ColumnDefinition Width="1*"/>
@@ -546,6 +547,28 @@
                                 TickFrequency="1"/>
                 </DockPanel>
 
+                <StackPanel Visibility="{Binding IsEnableWebpUniqueArgs, Converter={StaticResource IsCheck2VisibilityConverter}}"
+                            Orientation="Vertical">
+                    <Label Style="{StaticResource WrapLabelStyle}" 
+                       Content="编码质量"/>
+                    <DockPanel Margin="0 4 0 4">
+                        <TextBox Width="40" 
+                                 HorizontalContentAlignment="Center"
+                                 DockPanel.Dock="Left"
+                                 Text="{Binding ElementName=EncodingMethodSlider, Path=Value}"/>
+                        <Slider x:Name="EncodingMethodSlider" 
+                                Maximum="6" 
+                                Minimum="0" 
+                                Margin="8 0 8 0" 
+                                Value="{Binding EncodingMethod}" 
+                                SmallChange="1" 
+                                LargeChange="5"
+                                DockPanel.Dock="Right"
+                                IsSnapToTickEnabled="True"
+                                TickFrequency="1"/>
+                    </DockPanel>
+                </StackPanel>
+
                 <Label Style="{StaticResource WrapLabelStyle}" Content="采样算法"/>
                 <ComboBox Margin="0 4 0 4"
                           ItemsSource="{Binding ResamplerList}"
@@ -567,6 +590,29 @@
                         </DataTemplate>
                     </ComboBox.ItemTemplate>
                 </ComboBox>
+
+            </StackPanel>
+
+            <StackPanel Grid.Column="3" Orientation="Vertical" Margin="8 0 8 0">
+                <Label Style="{StaticResource WrapLabelStyle}" Content="其他参数"/>
+                <Label Style="{StaticResource WrapLabelStyle}" 
+                       Content="并行处理数量"/>
+                <DockPanel Margin="0 4 0 4">
+                    <TextBox Width="40" 
+                                 HorizontalContentAlignment="Center"
+                                 DockPanel.Dock="Left"
+                                 Text="{Binding ElementName=ParallelCountSlider, Path=Value}"/>
+                    <Slider x:Name="ParallelCountSlider" 
+                                Maximum="{Binding MaxParallelCount}" 
+                                Minimum="1" 
+                                Margin="8 0 8 0" 
+                                Value="{Binding ParallelCount}" 
+                                SmallChange="1" 
+                                LargeChange="5"
+                                DockPanel.Dock="Right"
+                                IsSnapToTickEnabled="True"
+                                TickFrequency="1"/>
+                </DockPanel>
 
                 <Label Style="{StaticResource WrapLabelStyle}" Content="输出文件夹"/>
                 <DockPanel Height="25">
@@ -609,6 +655,16 @@
                     </CheckBox>
                 </WrapPanel>
 
+                <Label Style="{StaticResource WrapLabelStyle}" Content="目标文件夹已有该图片时："/>
+                <WrapPanel>
+                    <RadioButton VerticalContentAlignment="Center"
+                                 IsChecked="{Binding IsCheckDontCoverExist}">
+                        <Label Style="{StaticResource WrapLabelStyle}" Content="不保存结果"/>
+                    </RadioButton>
+                    <RadioButton VerticalContentAlignment="Center">
+                        <Label Style="{StaticResource WrapLabelStyle}" Content="保存并覆盖"/>
+                    </RadioButton>
+                </WrapPanel>
             </StackPanel>
         </Grid>
 

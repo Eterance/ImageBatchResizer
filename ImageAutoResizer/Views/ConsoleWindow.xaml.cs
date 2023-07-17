@@ -36,5 +36,15 @@ namespace ImageBatchResizer.Views
         {
             SingleConsoleWindow = null;
         }
+
+        private void Window_Activated(object sender, EventArgs e)
+        {
+            if (Owner != null && Owner.IsVisible)
+            {
+                Owner.Topmost = true;
+                Owner.Focus();
+                Owner.Topmost = false;
+            }
+        }
     }
 }

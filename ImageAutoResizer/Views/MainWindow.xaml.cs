@@ -32,5 +32,19 @@ namespace ImageBatchResizer.Views
 
         }
 
+        private void OpenConsole_Click(object sender, RoutedEventArgs e)
+        {
+            if (ConsoleWindow.SingleConsoleWindow == null)
+            {
+                ConsoleWindow.SingleConsoleWindow = new(DataContext as CoreViewModel)
+                {
+                    Owner = this,
+                };
+            }
+            ConsoleWindow.SingleConsoleWindow.Show();
+            ConsoleWindow.SingleConsoleWindow.Topmost = true;
+            ConsoleWindow.SingleConsoleWindow.Focus();
+            ConsoleWindow.SingleConsoleWindow.Topmost = false;
+        }
     }
 }
