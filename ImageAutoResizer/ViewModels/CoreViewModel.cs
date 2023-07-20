@@ -934,6 +934,8 @@ namespace ImageBatchResizer.ViewModels
             if (IsAcceptTga) list.Add(".tga");
             if (IsAcceptTiff) list.Add(".tif"); list.Add(".tiff");
             if (IsAcceptWebP) list.Add(".webp");
+            // 设置编码器参数
+            SetupSelectedEncoder();
 
             SemaphoreSlim semaphore = new SemaphoreSlim(ParallelCount);
             List<Task<(bool, bool, long)>> tasks = new();
@@ -1040,8 +1042,6 @@ namespace ImageBatchResizer.ViewModels
             }
             var start_time = DateTime.Now;
             var temp_filename = Path.Combine(OutputPath, $"temp{SelectedFormatModel.Name}");
-            // 设置编码器参数
-            SetupSelectedEncoder();
 
             using (Image originImage = await Image.LoadAsync(item.Path))
             {
@@ -1060,10 +1060,10 @@ namespace ImageBatchResizer.ViewModels
                         //disk_cost += fileSizeInBytes;
                         //total_disk_cost += disk_cost;
                         Append2FullConsole($"{item.Name} 分辨率未改变 ({originWidth}×{originHeigth})，直接保存的大小：{Math.Round((double)fileSizeInBytes / 1024, 3)} KiB");
-                        if (fileSizeInBytes < TargetSizeUpperLimit)
+                        if (fileSizeInBytes < TargetSizeUpperLimit * 1024)
                         {
                             item.Processed = true;
-                            if (fileSizeInBytes < TargetSizeLowerLimit && IsDeleteSmallerThanTarget)
+                            if (fileSizeInBytes < TargetSizeLowerLimit * 1024 && IsDeleteSmallerThanTarget)
                             {
                                 //File.Delete(temp_filename);
                                 Append2FullConsole($"{item.Name} 直接转换的结果被删除，因为小于文件大小区间。耗时：{(DateTime.Now - start_time).TotalSeconds} 秒，磁盘写入 {Math.Round((double)disk_cost / 1024, 3)} KiB");
@@ -1316,7 +1316,6 @@ namespace ImageBatchResizer.ViewModels
                     FileFormat = (IsWebpLossyMode) ? WebpFileFormatType.Lossy : WebpFileFormatType.Lossless,
                     Quality = Quality,
                     Method = (WebpEncodingMethod)EncodingMethod
-                    
                 };
             }
             else if (SelectedFormatModel.Name == ".jpg")

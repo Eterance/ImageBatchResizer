@@ -1,20 +1,20 @@
-﻿<Window x:Class="ImageBatchResizer.Views.MainWindow"
+﻿<fw:AcrylicWindow x:Class="ImageBatchResizer.Views.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:i="http://schemas.microsoft.com/xaml/behaviors"
         xmlns:local="clr-namespace:ImageBatchResizer.Views"
-        xmlns:converters="clr-namespace:ImageBatchResizer.Converters"
         xmlns:controls="clr-namespace:ImageBatchResizer.Controls"
+        xmlns:fw="clr-namespace:SourceChord.FluentWPF;assembly=FluentWPF"
+        xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
         mc:Ignorable="d"
-        Title="MainWindow" Height="720" Width="800" MinWidth="800" MinHeight="600">
+        NoiseOpacity="0.005"
+        ExtendViewIntoTitleBar="False"
+        Title="MainWindow" Height="720" Width="900" MinWidth="900" MinHeight="600">
     <!-- xmlns:i https://stackoverflow.com/questions/20743961/the-name-interaction-does-not-exist-in-the-namespace-http-schemas-microsoft -->
 
     <Window.Resources>
-        <converters:IsCheck2VisibilityConverter x:Key="IsCheck2VisibilityConverter"/>
-        <converters:ProgressBarValueRound x:Key="ProgressBarValueRound"/>
-        <converters:BoolInvertConverter x:Key="BoolInvertConverter"/>
 
         <ItemsPanelTemplate x:Key="ListBoxItemsPanel2">
             <StackPanel Orientation="Vertical">
@@ -126,31 +126,68 @@
             </Setter>
         </Style>
     </Window.Resources>
-
     <Grid>
-        <Grid.RowDefinitions>
-            <RowDefinition Height="1*"/>
-            <RowDefinition Height="40"/>
-            <RowDefinition Height="auto"/>
-            <RowDefinition Height="20"/>
-        </Grid.RowDefinitions>
+        <ui:NavigationView x:Name="RootNavigation"
+                           IsBackButtonVisible="Collapsed">
+            <ui:NavigationView.MenuItems>
+                <ui:NavigationViewItem
+                  Content="Home"
+                  TargetPageType="{x:Type local:FilesPage}">
+                    <!-- https://learn.microsoft.com/en-us/windows/apps/design/style/segoe-ui-symbol-font -->
+                    <ui:NavigationViewItem.Icon>
+                        <ui:FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xe8e5;"/>
+                    </ui:NavigationViewItem.Icon>
+                </ui:NavigationViewItem>
+            </ui:NavigationView.MenuItems>
+        </ui:NavigationView>
 
-        <ListBox x:Name="ListBox_Files" 
-                Visibility="Hidden" 
-                ItemsPanel="{DynamicResource ListBoxItemsPanel2}"
-                Style="{DynamicResource ResourceKey=ListBox_History_style}" 
-                VirtualizingPanel.ScrollUnit="Pixel" 
-                ScrollViewer.HorizontalScrollBarVisibility="Disabled" 
-                ScrollViewer.VerticalScrollBarVisibility="Visible" 
-                BorderThickness="0"
-                Margin="-1,0,0,0" SelectionMode="Single" 
-                ItemContainerStyle="{StaticResource ContainerStyle_History}" 
-                Grid.Row="0" 
-                ItemsSource="{Binding SubViewModel.PinnedList}"
-                SelectionChanged="ListBox_Files_SelectionChanged" >
-        </ListBox>
 
-        <DataGrid Grid.Row="0"
+        <Frame Grid.Column="1" x:Name="mainFrame" Visibility="Collapsed">
+            
+        </Frame>
+        <Grid Grid.Column="1" Visibility="Collapsed" >
+            <Grid.RowDefinitions>
+                <RowDefinition Height="1*"/>
+                <RowDefinition Height="40"/>
+            </Grid.RowDefinitions>
+            <DockPanel Grid.Row="1">
+                <Button DockPanel.Dock="Right"
+                        Command="{Binding StartCommand}"
+                        IsEnabled="{Binding IsEnableStartButton}"
+                        Content="{Binding StartButtonContent}"/>
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="1*"/>
+                        <ColumnDefinition Width="1*"/>
+                    </Grid.ColumnDefinitions>
+                    <ProgressBar Grid.Column="0"
+                                 Height="30"
+                                 Margin="0 0 8 0"
+                         Grid.ColumnSpan="2" 
+                         x:Name="ProcessProgressBar"
+                         Value="{Binding ProcessedPercent}"/>
+                    <TextBlock Text="{Binding ProcessedInstruction}"
+                       HorizontalAlignment="Right"
+                       VerticalAlignment="Center"
+                       Grid.Column="0"
+                       Margin="0 0 4 0"/>
+                    <TextBlock Text="{Binding ElementName=ProcessProgressBar, Path=Value, Converter={StaticResource ProgressBarValueRound}}"
+                       HorizontalAlignment="Left"
+                       VerticalAlignment="Center"
+                       Grid.Column="1"
+                       Margin="4 0 0 0"/>
+                </Grid>
+            </DockPanel>
+            
+            
+            <Grid Grid.Row="0">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="1*"/>
+                    <RowDefinition Height="40"/>
+                    <RowDefinition Height="auto"/>
+                    <RowDefinition Height="20"/>
+                </Grid.RowDefinitions>
+                <DataGrid Grid.Row="0"
                   IsReadOnly="{Binding IsEnableParametersPanel, Converter={StaticResource BoolInvertConverter}}"
                   AllowDrop="True"
                   ItemsSource="{Binding InputFileList}"
@@ -160,213 +197,90 @@
                   HeadersVisibility="All"
                   RowHeaderWidth="24"
                   SelectionUnit="CellOrRowHeader">
-            <DataGrid.Columns>
-                <DataGridTextColumn Header="文件名" IsReadOnly="True" Binding="{Binding Name}"/>
-                <DataGridTextColumn Header="路径" IsReadOnly="True" Binding="{Binding Path}" />
-                <DataGridTextColumn Header="转换后路径" IsReadOnly="True" Binding="{Binding ResizedPath}" />
-                <DataGridCheckBoxColumn Header="已处理" IsReadOnly="{Binding IsEnableParametersPanel, Converter={StaticResource BoolInvertConverter}}" Binding="{Binding Processed}" />
-            </DataGrid.Columns>
-            <!-- https://stackoverflow.com/questions/40104765/bind-event-in-mvvm-and-pass-event-arguments-as-command-parameter -->
-            <i:Interaction.Triggers>
-                <i:EventTrigger EventName="Drop">
-                    <i:CallMethodAction TargetObject="{Binding}"
+                    <DataGrid.Columns>
+                        <DataGridTextColumn Header="文件名" IsReadOnly="True" Binding="{Binding Name}"/>
+                        <DataGridTextColumn Header="路径" IsReadOnly="True" Binding="{Binding Path}" />
+                        <DataGridTextColumn Header="转换后路径" IsReadOnly="True" Binding="{Binding ResizedPath}" />
+                        <DataGridCheckBoxColumn Header="已处理" IsReadOnly="{Binding IsEnableParametersPanel, Converter={StaticResource BoolInvertConverter}}" Binding="{Binding Processed}" />
+                    </DataGrid.Columns>
+                    <!-- https://stackoverflow.com/questions/40104765/bind-event-in-mvvm-and-pass-event-arguments-as-command-parameter -->
+                    <i:Interaction.Triggers>
+                        <i:EventTrigger EventName="Drop">
+                            <i:CallMethodAction TargetObject="{Binding}"
                                         MethodName="DataGrid_Drop"/>
-                </i:EventTrigger>
-            </i:Interaction.Triggers>
-        </DataGrid>
+                        </i:EventTrigger>
+                    </i:Interaction.Triggers>
+                </DataGrid>
 
-        <Grid Grid.Row="1">
-            <Grid.RowDefinitions>
-                <RowDefinition Height="1*"/>
-                <RowDefinition Height="40"/>
-            </Grid.RowDefinitions>
-            <DockPanel Grid.Row="1" 
+                <Grid Grid.Row="1">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="1*"/>
+                        <RowDefinition Height="40"/>
+                    </Grid.RowDefinitions>
+                    <DockPanel Grid.Row="1" 
                        HorizontalAlignment="Stretch"
                        LastChildFill="False"
                        Margin="8 0 8 0">
-                <Button Padding="8 0 8 0"
+                        <Button Padding="8 0 8 0"
                         Margin="4" 
                         DockPanel.Dock="Right"
                         Command="{Binding StartCommand}"
                         IsEnabled="{Binding IsEnableStartButton}"
                         Content="{Binding StartButtonContent}"/>
-                <Button Padding="8 0 8 0"
+                        <Button Padding="8 0 8 0"
                         Margin="4" 
                         DockPanel.Dock="Right"
                         Command="{Binding AppendFilesCommand}"
                         IsEnabled="{Binding IsEnableParametersPanel}">
-                    追加文件
-                </Button>
-                <Button Padding="8 0 8 0"
+                            追加文件
+                        </Button>
+                        <Button Padding="8 0 8 0"
                         Margin="4" 
                         DockPanel.Dock="Left"
                         Click="OpenConsole_Click">
-                    控制台
-                </Button>
-                <Button Padding="8 0 8 0"
+                            控制台
+                        </Button>
+                        <Button Padding="8 0 8 0"
                         Margin="4" 
                         DockPanel.Dock="Left"
                         Command="{Binding DeleteChosenCommand}"
                         IsEnabled="{Binding IsEnableParametersPanel}">
-                    删除选中
-                </Button>
-                <Button Padding="8 0 8 0"
+                            删除选中
+                        </Button>
+                        <Button Padding="8 0 8 0"
                         Margin="4" 
                         DockPanel.Dock="Left"
                         Command="{Binding DeleteAllCommand}"
                         IsEnabled="{Binding IsEnableParametersPanel}">
-                    删除全部
-                </Button>
-                <Button Padding="8 0 8 0"
+                            删除全部
+                        </Button>
+                        <Button Padding="8 0 8 0"
                         Margin="4" 
                         DockPanel.Dock="Left"
                         Command="{Binding ResetAllCommand}"
                         IsEnabled="{Binding IsEnableParametersPanel}">
-                    重置状态
-                </Button>
-            </DockPanel>
-        </Grid>
+                            重置状态
+                        </Button>
+                    </DockPanel>
+                </Grid>
 
-        <Grid Grid.Row="2" Margin="0 8 0 8" IsEnabled="{Binding IsEnableParametersPanel}">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="1*"/>
-                <ColumnDefinition Width="1*"/>
-                <ColumnDefinition Width="1*"/>
-                <ColumnDefinition Width="1*"/>
-            </Grid.ColumnDefinitions>
-            <StackPanel Grid.Column="0" Orientation="Vertical" Margin="4 0 4 0">
-                <Label Style="{StaticResource WrapLabelStyle}" Content="输入筛选参数"/>
-                <CheckBox x:Name="InputResolutionUpperLimitCheckBox" 
+                <Grid Grid.Row="2" Margin="0 8 0 8" IsEnabled="{Binding IsEnableParametersPanel}">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="1*"/>
+                        <ColumnDefinition Width="1*"/>
+                        <ColumnDefinition Width="1*"/>
+                        <ColumnDefinition Width="1*"/>
+                    </Grid.ColumnDefinitions>
+                    <StackPanel Grid.Column="0" Orientation="Vertical" Margin="4 0 4 0">
+                        <Label Style="{StaticResource WrapLabelStyle}" Content="输入筛选参数"/>
+                        <CheckBox x:Name="InputResolutionUpperLimitCheckBox" 
                           VerticalAlignment="Stretch" 
                           VerticalContentAlignment="Center"
                           Margin="4 4 4 8"
                           IsChecked="{Binding IsEnableInputResUpperLimit}">
-                    <TextBlock TextWrapping="WrapWithOverflow">分辨率上限</TextBlock>
-                </CheckBox>
-                <Grid IsEnabled="{Binding ElementName=InputResolutionUpperLimitCheckBox, Path=IsChecked}">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="auto"/>
-                        <ColumnDefinition Width="1*"/>
-                        <ColumnDefinition Width="auto"/>
-                        <ColumnDefinition Width="1*"/>
-                    </Grid.ColumnDefinitions>
-                    <Label Grid.Column="0"
-                           HorizontalAlignment="Left">宽</Label>
-                    <TextBox Grid.Column="1"
-                             VerticalContentAlignment="Center"
-                             HorizontalContentAlignment="Center"
-                             Text="{Binding InputResUpperLimitWidth}"/>
-                    <Label Grid.Column="2"
-                           HorizontalAlignment="Left">长</Label>
-                    <TextBox Grid.Column="3"
-                             VerticalContentAlignment="Center"
-                             HorizontalContentAlignment="Center"
-                             Text="{Binding InputResUpperLimitHeight}"/>
-                </Grid>
-
-                <CheckBox x:Name="InputResolutionLowerLimitCheckBox" 
-                          VerticalAlignment="Stretch" 
-                          VerticalContentAlignment="Center"
-                          Margin="4 4 4 8"
-                          IsChecked="{Binding IsEnableInputResLowerLimit}">
-                    <TextBlock TextWrapping="WrapWithOverflow">分辨率下限</TextBlock>
-                </CheckBox>
-                <Grid IsEnabled="{Binding ElementName=InputResolutionLowerLimitCheckBox, Path=IsChecked}">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="auto"/>
-                        <ColumnDefinition Width="1*"/>
-                        <ColumnDefinition Width="auto"/>
-                        <ColumnDefinition Width="1*"/>
-                    </Grid.ColumnDefinitions>
-                    <Label Grid.Column="0"
-                           HorizontalAlignment="Left">宽</Label>
-                    <TextBox Grid.Column="1"
-                             VerticalContentAlignment="Center"
-                             HorizontalContentAlignment="Center"
-                             Text="{Binding InputResLowerLimitWidth}"/>
-                    <Label Grid.Column="2"
-                           HorizontalAlignment="Left">长</Label>
-                    <TextBox Grid.Column="3"
-                             VerticalContentAlignment="Center"
-                             HorizontalContentAlignment="Center"
-                             Text="{Binding InputResLowerLimitHeight}"/>
-                </Grid>
-
-                <CheckBox VerticalAlignment="Stretch" 
-                          VerticalContentAlignment="Center"
-                          Margin="4 8 4 8"
-                          IsChecked="{Binding IsInputResLimitationAdaptPortraitImage}">
-                    <TextBlock TextWrapping="WrapWithOverflow">分辨率限制自适应竖图</TextBlock>
-                </CheckBox>
-
-                <Label Style="{StaticResource WrapLabelStyle}" Content="读取格式"/>
-                <WrapPanel Margin="4">
-                    <CheckBox Margin="4" IsChecked="{Binding IsAcceptBmp}">.bmp</CheckBox>
-                    <CheckBox Margin="4" IsChecked="{Binding IsAcceptJpeg}">.jpg</CheckBox>
-                    <CheckBox Margin="4" IsChecked="{Binding IsAcceptPng}">.png</CheckBox>
-                    <CheckBox Margin="4" IsChecked="{Binding IsAcceptTga}">.tga</CheckBox>
-                    <CheckBox Margin="4" IsChecked="{Binding IsAcceptTiff}">.tif</CheckBox>
-                    <CheckBox Margin="4" IsChecked="{Binding IsAcceptWebP}">.webp</CheckBox>
-                </WrapPanel>
-            </StackPanel>
-
-            <StackPanel Grid.Column="1" Orientation="Vertical" Margin="8 0 8 0">
-                <Label Style="{StaticResource WrapLabelStyle}" Content="模式"/>
-                <WrapPanel Orientation="Horizontal">
-                    <RadioButton x:Name="FileSizeModeRadioButton"
-                                 IsChecked="{Binding IsFileSizeFirstMode}"
-                                 Margin="4"
-                                 VerticalContentAlignment="Center">
-                        <Label>文件大小优先</Label>
-                    </RadioButton>
-                    <RadioButton x:Name="ResModeRadioButton"
-                                 Margin="4"
-                                 VerticalContentAlignment="Center">
-                        <Label>分辨率优先</Label> 
-                    </RadioButton>
-                </WrapPanel>
-
-                <StackPanel Orientation="Vertical"
-                            Visibility="{Binding ElementName=FileSizeModeRadioButton, Path=IsChecked, Converter={StaticResource IsCheck2VisibilityConverter}}">
-                    <Label Style="{StaticResource WrapLabelStyle}" Content="目标大小区间（KiB）"/>
-                    <Grid Margin="0 4 0 4">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="1*"/>
-                            <ColumnDefinition Width="auto"/>
-                            <ColumnDefinition Width="1*"/>
-                        </Grid.ColumnDefinitions>
-                        <TextBox Grid.Column="0"
-                                 VerticalContentAlignment="Center"
-                                 HorizontalContentAlignment="Center"
-                                 Text="{Binding TargetSizeLowerLimit}"/>
-                        <Label Grid.Column="1" 
-                               HorizontalAlignment="Left">-</Label>
-                        <TextBox Grid.Column="2"
-                                 VerticalContentAlignment="Center"
-                                 HorizontalContentAlignment="Center"
-                                 Text="{Binding TargetSizeUpperLimit}"/>
-                    </Grid>
-
-                    <DockPanel Margin="0 8 0 8">
-                        <Label Style="{StaticResource WrapLabelStyle}" Content="二分法尝试次数上限"/>
-                        <TextBox DockPanel.Dock="Left"
-                                 Margin="4 0 0 0"
-                                 VerticalContentAlignment="Center"
-                                 HorizontalContentAlignment="Center"
-                                 Text="{Binding BinarySearchTimesLimit}"/>
-                    </DockPanel>
-
-                    <CheckBox Margin="0 4 0 4"
-                              IsChecked="{Binding IsDeleteSmallerThanTarget}">
-                        <TextBlock TextWrapping="WrapWithOverflow">删除直接转换后小于目标大小区间的文件</TextBlock>
-                    </CheckBox>
-
-                    <CheckBox x:Name="FileSizeModeOutputResolutionLowerLimitCheckBox" 
-                              Margin="0 4 0 4"
-                              IsChecked="{Binding IsEnableResLowerLimit}">分辨率下限</CheckBox>
-                    <StackPanel IsEnabled="{Binding ElementName=FileSizeModeOutputResolutionLowerLimitCheckBox, Path=IsChecked}">
-
-                        <Grid>
+                            <TextBlock TextWrapping="WrapWithOverflow">分辨率上限</TextBlock>
+                        </CheckBox>
+                        <Grid IsEnabled="{Binding ElementName=InputResolutionUpperLimitCheckBox, Path=IsChecked}">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="auto"/>
                                 <ColumnDefinition Width="1*"/>
@@ -374,168 +288,294 @@
                                 <ColumnDefinition Width="1*"/>
                             </Grid.ColumnDefinitions>
                             <Label Grid.Column="0"
-                                    HorizontalAlignment="Left">宽</Label>
+                           VerticalAlignment="Center"
+                           HorizontalAlignment="Left">宽</Label>
                             <TextBox Grid.Column="1"
-                                 VerticalContentAlignment="Center"
-                                 HorizontalContentAlignment="Center"
-                                 Text="{Binding TargetResolutionWidthLowerLimit}"/>
+                             VerticalContentAlignment="Center"
+                             HorizontalContentAlignment="Center"
+                             Text="{Binding InputResUpperLimitWidth}"/>
                             <Label Grid.Column="2"
-                           HorizontalAlignment="Left">高</Label>
+                           HorizontalAlignment="Left">长</Label>
                             <TextBox Grid.Column="3"
                              VerticalContentAlignment="Center"
                              HorizontalContentAlignment="Center"
-                             Text="{Binding TargetResolutionHeightLowerLimit}"/>
+                             Text="{Binding InputResUpperLimitHeight}"/>
                         </Grid>
 
-                        <CheckBox VerticalAlignment="Stretch" 
+                        <CheckBox x:Name="InputResolutionLowerLimitCheckBox" 
+                          VerticalAlignment="Stretch" 
                           VerticalContentAlignment="Center"
-                          Margin="0 8 0 4"
-                          IsChecked="{Binding IsOutputResLimitationAdaptPortraitImage}">
-                            <Label Grid.Column="1" 
-                               HorizontalAlignment="Left">
-                                <TextBlock TextWrapping="WrapWithOverflow">分辨率限制自适应竖图</TextBlock>
-                            </Label>
+                          Margin="4 4 4 8"
+                          IsChecked="{Binding IsEnableInputResLowerLimit}">
+                            <TextBlock TextWrapping="WrapWithOverflow">分辨率下限</TextBlock>
                         </CheckBox>
-
-                        <Label Style="{StaticResource WrapLabelStyle}" Content="输出图片分辨率小于下限时："/>
-                        <RadioButton VerticalContentAlignment="Center"
-                                     IsChecked="{Binding FileSizeFirst_DoNothing}">
-                            <Label Style="{StaticResource WrapLabelStyle}" Content="保留此图片，什么也不做"/>
-                        </RadioButton>
-                        <RadioButton VerticalContentAlignment="Center"
-                                     IsChecked="{Binding FileSizeFirst_Delete}">
-                            <Label Style="{StaticResource WrapLabelStyle}" Content="删除此图片"/>
-                        </RadioButton>
-                        <RadioButton VerticalContentAlignment="Center"
-                                     IsChecked="{Binding FileSizeFirst_IgnoreSizeLimit}">
-                            <Label Style="{StaticResource WrapLabelStyle}" Content="忽略目标大小区间限制，重新调整至分辨率下限"/>
-                        </RadioButton>
-
-                    </StackPanel>
-                </StackPanel>
-
-                <StackPanel Orientation="Vertical" Visibility="{Binding ElementName=ResModeRadioButton, Path=IsChecked, Converter={StaticResource IsCheck2VisibilityConverter}}">
-                    <TextBlock TextWrapping="WrapWithOverflow" 
-                               Margin="0 4 0 4">目标分辨率</TextBlock>
-                    <Grid>
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="auto"/>
-                            <ColumnDefinition Width="1*"/>
-                            <ColumnDefinition Width="auto"/>
-                            <ColumnDefinition Width="1*"/>
-                        </Grid.ColumnDefinitions>
-                        <Label Grid.Column="0"
-                           HorizontalAlignment="Left">宽</Label>
-                        <TextBox Grid.Column="1"
-                             VerticalContentAlignment="Center"
-                             HorizontalContentAlignment="Center"
-                             Text="{Binding TargetResolutionWidthLowerLimit}"/>
-                        <Label Grid.Column="2"
-                           HorizontalAlignment="Left">高</Label>
-                        <TextBox Grid.Column="3"
-                             VerticalContentAlignment="Center"
-                             HorizontalContentAlignment="Center"
-                             Text="{Binding TargetResolutionHeightLowerLimit}"/>
-                    </Grid>
-
-                    <CheckBox VerticalAlignment="Stretch" 
-                          VerticalContentAlignment="Center"
-                          Margin="0 8 0 4"
-                          IsChecked="{Binding IsOutputResLimitationAdaptPortraitImage}">
-                        <Label Style="{StaticResource WrapLabelStyle}" Content="分辨率限制自适应竖图"/>
-                    </CheckBox>
-
-                    <CheckBox x:Name="ResModeOutputResolutionLowerLimitCheckBox"
-                              VerticalContentAlignment="Center"
-                              Margin="0 4 0 4"
-                              IsChecked="{Binding IsEnableTargetSizeLimit}">
-                        <Label Style="{StaticResource WrapLabelStyle}" Content="目标大小区间（KiB）"/>
-                    </CheckBox>
-                    <StackPanel IsEnabled="{Binding ElementName=ResModeOutputResolutionLowerLimitCheckBox, Path=IsChecked}">
-                        <Grid Margin="0 4 0 4">
+                        <Grid IsEnabled="{Binding ElementName=InputResolutionLowerLimitCheckBox, Path=IsChecked}">
                             <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="auto"/>
                                 <ColumnDefinition Width="1*"/>
                                 <ColumnDefinition Width="auto"/>
                                 <ColumnDefinition Width="1*"/>
                             </Grid.ColumnDefinitions>
-                            <TextBox Grid.Column="0"
+                            <Label Grid.Column="0"
+                           HorizontalAlignment="Left">宽</Label>
+                            <TextBox Grid.Column="1"
+                             VerticalContentAlignment="Center"
+                             HorizontalContentAlignment="Center"
+                             Text="{Binding InputResLowerLimitWidth}"/>
+                            <Label Grid.Column="2"
+                           HorizontalAlignment="Left">长</Label>
+                            <TextBox Grid.Column="3"
+                             VerticalContentAlignment="Center"
+                             HorizontalContentAlignment="Center"
+                             Text="{Binding InputResLowerLimitHeight}"/>
+                        </Grid>
+
+                        <CheckBox VerticalAlignment="Stretch" 
+                          VerticalContentAlignment="Center"
+                          Margin="4 8 4 8"
+                          IsChecked="{Binding IsInputResLimitationAdaptPortraitImage}">
+                            <TextBlock TextWrapping="WrapWithOverflow">分辨率限制自适应竖图</TextBlock>
+                        </CheckBox>
+
+                        <Label>
+                            <TextBlock>读取格式</TextBlock>
+                        </Label>
+                        <WrapPanel Margin="4">
+                            <CheckBox Margin="4" IsChecked="{Binding IsAcceptBmp}">.bmp</CheckBox>
+                            <CheckBox Margin="4" IsChecked="{Binding IsAcceptJpeg}">.jpg</CheckBox>
+                            <CheckBox Margin="4" IsChecked="{Binding IsAcceptPng}">.png</CheckBox>
+                            <CheckBox Margin="4" IsChecked="{Binding IsAcceptTga}">.tga</CheckBox>
+                            <CheckBox Margin="4" IsChecked="{Binding IsAcceptTiff}">.tif</CheckBox>
+                            <CheckBox Margin="4" IsChecked="{Binding IsAcceptWebP}">.webp</CheckBox>
+                        </WrapPanel>
+                    </StackPanel>
+
+                    <StackPanel Grid.Column="1" Orientation="Vertical" Margin="8 0 8 0">
+                        <Label Style="{StaticResource WrapLabelStyle}" Content="模式"/>
+                        <WrapPanel Orientation="Horizontal">
+                            <RadioButton x:Name="FileSizeModeRadioButton"
+                                 IsChecked="{Binding IsFileSizeFirstMode}"
+                                 Margin="4"
+                                 VerticalContentAlignment="Center">
+                                <Label>文件大小优先</Label>
+                            </RadioButton>
+                            <RadioButton x:Name="ResModeRadioButton"
+                                 Margin="4"
+                                 VerticalContentAlignment="Center">
+                                <Label>分辨率优先</Label>
+                            </RadioButton>
+                        </WrapPanel>
+
+                        <StackPanel Orientation="Vertical"
+                            Visibility="{Binding ElementName=FileSizeModeRadioButton, Path=IsChecked, Converter={StaticResource IsCheck2VisibilityConverter}}">
+                            <Label Style="{StaticResource WrapLabelStyle}" Content="目标大小区间（KiB）"/>
+                            <Grid Margin="0 4 0 4">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="1*"/>
+                                    <ColumnDefinition Width="auto"/>
+                                    <ColumnDefinition Width="1*"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBox Grid.Column="0"
                                  VerticalContentAlignment="Center"
                                  HorizontalContentAlignment="Center"
                                  Text="{Binding TargetSizeLowerLimit}"/>
-                            <Label Grid.Column="1" 
+                                <Label Grid.Column="1" 
                                HorizontalAlignment="Left">-</Label>
-                            <TextBox Grid.Column="2"
+                                <TextBox Grid.Column="2"
                                  VerticalContentAlignment="Center"
                                  HorizontalContentAlignment="Center"
                                  Text="{Binding TargetSizeUpperLimit}"/>
-                        </Grid>
+                            </Grid>
 
-                        <Label Style="{StaticResource WrapLabelStyle}" Content="输出图片文件大小超出目标大小区间时"/>
-                        <RadioButton VerticalContentAlignment="Center"
+                            <DockPanel Margin="0 8 0 8">
+                                <Label Style="{StaticResource WrapLabelStyle}" Content="二分法尝试次数上限"/>
+                                <TextBox DockPanel.Dock="Left"
+                                 Margin="4 0 0 0"
+                                 VerticalContentAlignment="Center"
+                                 HorizontalContentAlignment="Center"
+                                 Text="{Binding BinarySearchTimesLimit}"/>
+                            </DockPanel>
+
+                            <CheckBox Margin="0 4 0 4"
+                              IsChecked="{Binding IsDeleteSmallerThanTarget}">
+                                <TextBlock TextWrapping="WrapWithOverflow">删除直接转换后小于目标大小区间的文件</TextBlock>
+                            </CheckBox>
+
+                            <CheckBox x:Name="FileSizeModeOutputResolutionLowerLimitCheckBox" 
+                              Margin="0 4 0 4"
+                              IsChecked="{Binding IsEnableResLowerLimit}">分辨率下限</CheckBox>
+                            <StackPanel IsEnabled="{Binding ElementName=FileSizeModeOutputResolutionLowerLimitCheckBox, Path=IsChecked}">
+
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="auto"/>
+                                        <ColumnDefinition Width="1*"/>
+                                        <ColumnDefinition Width="auto"/>
+                                        <ColumnDefinition Width="1*"/>
+                                    </Grid.ColumnDefinitions>
+                                    <Label Grid.Column="0"
+                                    HorizontalAlignment="Left">宽</Label>
+                                    <TextBox Grid.Column="1"
+                                 VerticalContentAlignment="Center"
+                                 HorizontalContentAlignment="Center"
+                                 Text="{Binding TargetResolutionWidthLowerLimit}"/>
+                                    <Label Grid.Column="2"
+                           HorizontalAlignment="Left">高</Label>
+                                    <TextBox Grid.Column="3"
+                             VerticalContentAlignment="Center"
+                             HorizontalContentAlignment="Center"
+                             Text="{Binding TargetResolutionHeightLowerLimit}"/>
+                                </Grid>
+
+                                <CheckBox VerticalAlignment="Stretch" 
+                          VerticalContentAlignment="Center"
+                          Margin="0 8 0 4"
+                          IsChecked="{Binding IsOutputResLimitationAdaptPortraitImage}">
+                                    <Label Grid.Column="1" 
+                               HorizontalAlignment="Left">
+                                        <TextBlock TextWrapping="WrapWithOverflow">分辨率限制自适应竖图</TextBlock>
+                                    </Label>
+                                </CheckBox>
+
+                                <Label Style="{StaticResource WrapLabelStyle}" Content="输出图片分辨率小于下限时："/>
+                                <RadioButton VerticalContentAlignment="Center"
+                                     IsChecked="{Binding FileSizeFirst_DoNothing}">
+                                    <Label Style="{StaticResource WrapLabelStyle}" Content="保留此图片，什么也不做"/>
+                                </RadioButton>
+                                <RadioButton VerticalContentAlignment="Center"
+                                     IsChecked="{Binding FileSizeFirst_Delete}">
+                                    <Label Style="{StaticResource WrapLabelStyle}" Content="删除此图片"/>
+                                </RadioButton>
+                                <RadioButton VerticalContentAlignment="Center"
+                                     IsChecked="{Binding FileSizeFirst_IgnoreSizeLimit}">
+                                    <Label Style="{StaticResource WrapLabelStyle}" Content="忽略目标大小区间限制，重新调整至分辨率下限"/>
+                                </RadioButton>
+
+                            </StackPanel>
+                        </StackPanel>
+
+                        <StackPanel Orientation="Vertical" Visibility="{Binding ElementName=ResModeRadioButton, Path=IsChecked, Converter={StaticResource IsCheck2VisibilityConverter}}">
+                            <TextBlock TextWrapping="WrapWithOverflow" 
+                               Margin="0 4 0 4">目标分辨率</TextBlock>
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="auto"/>
+                                    <ColumnDefinition Width="1*"/>
+                                    <ColumnDefinition Width="auto"/>
+                                    <ColumnDefinition Width="1*"/>
+                                </Grid.ColumnDefinitions>
+                                <Label Grid.Column="0"
+                           HorizontalAlignment="Left">宽</Label>
+                                <TextBox Grid.Column="1"
+                             VerticalContentAlignment="Center"
+                             HorizontalContentAlignment="Center"
+                             Text="{Binding TargetResolutionWidthLowerLimit}"/>
+                                <Label Grid.Column="2"
+                           HorizontalAlignment="Left">高</Label>
+                                <TextBox Grid.Column="3"
+                             VerticalContentAlignment="Center"
+                             HorizontalContentAlignment="Center"
+                             Text="{Binding TargetResolutionHeightLowerLimit}"/>
+                            </Grid>
+
+                            <CheckBox VerticalAlignment="Stretch" 
+                          VerticalContentAlignment="Center"
+                          Margin="0 8 0 4"
+                          IsChecked="{Binding IsOutputResLimitationAdaptPortraitImage}">
+                                <Label Style="{StaticResource WrapLabelStyle}" Content="分辨率限制自适应竖图"/>
+                            </CheckBox>
+
+                            <CheckBox x:Name="ResModeOutputResolutionLowerLimitCheckBox"
+                              VerticalContentAlignment="Center"
+                              Margin="0 4 0 4"
+                              IsChecked="{Binding IsEnableTargetSizeLimit}">
+                                <Label Style="{StaticResource WrapLabelStyle}" Content="目标大小区间（KiB）"/>
+                            </CheckBox>
+                            <StackPanel IsEnabled="{Binding ElementName=ResModeOutputResolutionLowerLimitCheckBox, Path=IsChecked}">
+                                <Grid Margin="0 4 0 4">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="1*"/>
+                                        <ColumnDefinition Width="auto"/>
+                                        <ColumnDefinition Width="1*"/>
+                                    </Grid.ColumnDefinitions>
+                                    <TextBox Grid.Column="0"
+                                 VerticalContentAlignment="Center"
+                                 HorizontalContentAlignment="Center"
+                                 Text="{Binding TargetSizeLowerLimit}"/>
+                                    <Label Grid.Column="1" 
+                               HorizontalAlignment="Left">-</Label>
+                                    <TextBox Grid.Column="2"
+                                 VerticalContentAlignment="Center"
+                                 HorizontalContentAlignment="Center"
+                                 Text="{Binding TargetSizeUpperLimit}"/>
+                                </Grid>
+
+                                <Label Style="{StaticResource WrapLabelStyle}" Content="输出图片文件大小超出目标大小区间时"/>
+                                <RadioButton VerticalContentAlignment="Center"
                                      IsChecked="{Binding ResFirst_DoNothing}">
-                            <Label Style="{StaticResource WrapLabelStyle}" Content="保留此图片，什么也不做"/>
-                        </RadioButton>
-                        <RadioButton VerticalContentAlignment="Center"
+                                    <Label Style="{StaticResource WrapLabelStyle}" Content="保留此图片，什么也不做"/>
+                                </RadioButton>
+                                <RadioButton VerticalContentAlignment="Center"
                                      IsChecked="{Binding ResFirst_Delete}">
-                            <Label Style="{StaticResource WrapLabelStyle}" Content="删除此图片"/>
-                        </RadioButton>
-                        <RadioButton x:Name="ResModeIgnoreRadioButton" 
+                                    <Label Style="{StaticResource WrapLabelStyle}" Content="删除此图片"/>
+                                </RadioButton>
+                                <RadioButton x:Name="ResModeIgnoreRadioButton" 
                                      VerticalContentAlignment="Center"
                                      IsChecked="{Binding ResFirst_IgnoreSizeLimit}">
-                            <Label Style="{StaticResource WrapLabelStyle}" Content="忽略目标分辨率限制，重新调整至目标大小区间内"/>
-                        </RadioButton>
+                                    <Label Style="{StaticResource WrapLabelStyle}" Content="忽略目标分辨率限制，重新调整至目标大小区间内"/>
+                                </RadioButton>
 
-                        <DockPanel Margin="0 8 0 8" 
+                                <DockPanel Margin="0 8 0 8" 
                                    IsEnabled="{Binding ElementName=ResModeIgnoreRadioButton, Path=IsChecked}">
-                            <Label Style="{StaticResource WrapLabelStyle}" Content="二分法尝试次数上限"/>
-                            <TextBox DockPanel.Dock="Left"
+                                    <Label Style="{StaticResource WrapLabelStyle}" Content="二分法尝试次数上限"/>
+                                    <TextBox DockPanel.Dock="Left"
                                  Margin="4 0 0 0"
                                  VerticalContentAlignment="Center"
                                  HorizontalContentAlignment="Center">20</TextBox>
-                        </DockPanel>
+                                </DockPanel>
 
+                            </StackPanel>
+                        </StackPanel>
                     </StackPanel>
-                </StackPanel>
-            </StackPanel>
 
-            <StackPanel Grid.Column="2" Orientation="Vertical" Margin="8 0 8 0">
-                <Label Style="{StaticResource WrapLabelStyle}" Content="输出格式"/>
-                <ComboBox Margin="0 4 0 4"
+                    <StackPanel Grid.Column="2" Orientation="Vertical" Margin="8 0 8 0">
+                        <Label Style="{StaticResource WrapLabelStyle}" Content="输出格式"/>
+                        <ComboBox Margin="0 4 0 4"
                           ItemsSource="{Binding FormatList}"
                           SelectedValue="{Binding SelectedFormatModel}">
-                    <ComboBox.ItemTemplate>
-                        <DataTemplate>
-                            <TextBlock Text="{Binding Name}"/>
-                        </DataTemplate>
-                    </ComboBox.ItemTemplate>
-                </ComboBox>
+                            <ComboBox.ItemTemplate>
+                                <DataTemplate>
+                                    <TextBlock Text="{Binding Name}"/>
+                                </DataTemplate>
+                            </ComboBox.ItemTemplate>
+                        </ComboBox>
 
-                <Label Style="{StaticResource WrapLabelStyle}" 
+                        <Label Style="{StaticResource WrapLabelStyle}" 
                        Content="Webp 压缩模式"
                        Visibility="{Binding IsWebpEncoder, Converter={StaticResource IsCheck2VisibilityConverter}}"/>
-                <WrapPanel Orientation="Horizontal"
+                        <WrapPanel Orientation="Horizontal"
                            Visibility="{Binding IsWebpEncoder, Converter={StaticResource IsCheck2VisibilityConverter}}">
-                    <RadioButton IsChecked="{Binding IsWebpLossyMode}"
+                            <RadioButton IsChecked="{Binding IsWebpLossyMode}"
                                  Margin="4"
                                  VerticalContentAlignment="Center">
-                        <Label>有损</Label>
-                    </RadioButton>
-                    <RadioButton Margin="4"
+                                <Label>有损</Label>
+                            </RadioButton>
+                            <RadioButton Margin="4"
                                  VerticalContentAlignment="Center">
-                        <Label>无损</Label>
-                    </RadioButton>
-                </WrapPanel>
+                                <Label>无损</Label>
+                            </RadioButton>
+                        </WrapPanel>
 
-                <Label Style="{StaticResource WrapLabelStyle}" 
+                        <Label Style="{StaticResource WrapLabelStyle}" 
                        Content="{Binding CompressDescrption}" 
                        Visibility="{Binding IsEnableCompressAdjust, Converter={StaticResource IsCheck2VisibilityConverter}}"/>
-                <DockPanel Margin="0 4 0 4"
+                        <DockPanel Margin="0 4 0 4"
                            Visibility="{Binding IsEnableCompressAdjust, Converter={StaticResource IsCheck2VisibilityConverter}}">
-                    <TextBox Width="40" 
+                            <TextBox Width="40" 
                                  HorizontalContentAlignment="Center"
                                  DockPanel.Dock="Left"
                                  Text="{Binding ElementName=QualitySlider, Path=Value}"/>
-                    <Slider x:Name="QualitySlider" 
+                            <Slider x:Name="QualitySlider" 
                                 Maximum="{Binding SliderMaximum}" 
                                 Minimum="{Binding SliderMinimum}" 
                                 Margin="8 0 8 0" 
@@ -545,18 +585,18 @@
                                 DockPanel.Dock="Right"
                                 IsSnapToTickEnabled="True"
                                 TickFrequency="1"/>
-                </DockPanel>
+                        </DockPanel>
 
-                <StackPanel Visibility="{Binding IsEnableWebpUniqueArgs, Converter={StaticResource IsCheck2VisibilityConverter}}"
+                        <StackPanel Visibility="{Binding IsEnableWebpUniqueArgs, Converter={StaticResource IsCheck2VisibilityConverter}}"
                             Orientation="Vertical">
-                    <Label Style="{StaticResource WrapLabelStyle}" 
+                            <Label Style="{StaticResource WrapLabelStyle}" 
                        Content="编码质量"/>
-                    <DockPanel Margin="0 4 0 4">
-                        <TextBox Width="40" 
+                            <DockPanel Margin="0 4 0 4">
+                                <TextBox Width="40" 
                                  HorizontalContentAlignment="Center"
                                  DockPanel.Dock="Left"
                                  Text="{Binding ElementName=EncodingMethodSlider, Path=Value}"/>
-                        <Slider x:Name="EncodingMethodSlider" 
+                                <Slider x:Name="EncodingMethodSlider" 
                                 Maximum="6" 
                                 Minimum="0" 
                                 Margin="8 0 8 0" 
@@ -566,43 +606,43 @@
                                 DockPanel.Dock="Right"
                                 IsSnapToTickEnabled="True"
                                 TickFrequency="1"/>
-                    </DockPanel>
-                </StackPanel>
+                            </DockPanel>
+                        </StackPanel>
 
-                <Label Style="{StaticResource WrapLabelStyle}" Content="采样算法"/>
-                <ComboBox Margin="0 4 0 4"
+                        <Label Style="{StaticResource WrapLabelStyle}" Content="采样算法"/>
+                        <ComboBox Margin="0 4 0 4"
                           ItemsSource="{Binding ResamplerList}"
                           SelectedValue="{Binding SelectedResamplerModel}">
-                    <ComboBox.ItemTemplate>
-                        <DataTemplate>
-                            <TextBlock Text="{Binding Name}"/>
-                        </DataTemplate>
-                    </ComboBox.ItemTemplate>
-                </ComboBox>
+                            <ComboBox.ItemTemplate>
+                                <DataTemplate>
+                                    <TextBlock Text="{Binding Name}"/>
+                                </DataTemplate>
+                            </ComboBox.ItemTemplate>
+                        </ComboBox>
 
-                <Label Style="{StaticResource WrapLabelStyle}" Content="适应分辨率时的缩小策略"/>
-                <ComboBox Margin="0 4 0 4"
+                        <Label Style="{StaticResource WrapLabelStyle}" Content="适应分辨率时的缩小策略"/>
+                        <ComboBox Margin="0 4 0 4"
                           ItemsSource="{Binding ResizeModeList}"
                           SelectedValue="{Binding SelectedResizeModeModel}">
-                    <ComboBox.ItemTemplate>
-                        <DataTemplate>
-                            <TextBlock Text="{Binding Name}"/>
-                        </DataTemplate>
-                    </ComboBox.ItemTemplate>
-                </ComboBox>
+                            <ComboBox.ItemTemplate>
+                                <DataTemplate>
+                                    <TextBlock Text="{Binding Name}"/>
+                                </DataTemplate>
+                            </ComboBox.ItemTemplate>
+                        </ComboBox>
 
-            </StackPanel>
+                    </StackPanel>
 
-            <StackPanel Grid.Column="3" Orientation="Vertical" Margin="8 0 8 0">
-                <Label Style="{StaticResource WrapLabelStyle}" Content="其他参数"/>
-                <Label Style="{StaticResource WrapLabelStyle}" 
+                    <StackPanel Grid.Column="3" Orientation="Vertical" Margin="8 0 8 0">
+                        <Label Style="{StaticResource WrapLabelStyle}" Content="其他参数"/>
+                        <Label Style="{StaticResource WrapLabelStyle}" 
                        Content="并行处理数量"/>
-                <DockPanel Margin="0 4 0 4">
-                    <TextBox Width="40" 
+                        <DockPanel Margin="0 4 0 4">
+                            <TextBox Width="40" 
                                  HorizontalContentAlignment="Center"
                                  DockPanel.Dock="Left"
                                  Text="{Binding ElementName=ParallelCountSlider, Path=Value}"/>
-                    <Slider x:Name="ParallelCountSlider" 
+                            <Slider x:Name="ParallelCountSlider" 
                                 Maximum="{Binding MaxParallelCount}" 
                                 Minimum="1" 
                                 Margin="8 0 8 0" 
@@ -612,81 +652,66 @@
                                 DockPanel.Dock="Right"
                                 IsSnapToTickEnabled="True"
                                 TickFrequency="1"/>
-                </DockPanel>
+                        </DockPanel>
 
-                <Label Style="{StaticResource WrapLabelStyle}" Content="输出文件夹"/>
-                <DockPanel Height="25">
-                    <Button DockPanel.Dock="Right" 
+                        <Label Style="{StaticResource WrapLabelStyle}" Content="输出文件夹"/>
+                        <DockPanel>
+                            <Button DockPanel.Dock="Right" 
                             Margin="4 0 0 0"
                             Padding="8 0 8 0"
+                                VerticalAlignment="Stretch"
                             Command="{Binding SelectOutputFolderCommand}">选择文件夹</Button>
-                    <TextBox VerticalContentAlignment="Center"
+                            <TextBox VerticalContentAlignment="Center"
                              Text="{Binding OutputPath}">
-                        <i:Interaction.Triggers>
-                            <i:EventTrigger EventName="TextChanged">
-                                <i:InvokeCommandAction Command="{Binding ResetOuputPathErrorContentCommand}"/>
-                            </i:EventTrigger>
-                        </i:Interaction.Triggers>
-                    </TextBox>
-                </DockPanel>
-                <Label Style="{StaticResource ErrorLabelStyle}" Content="{Binding OuputPathErrorContent}"/>
+                                <i:Interaction.Triggers>
+                                    <i:EventTrigger EventName="TextChanged">
+                                        <i:InvokeCommandAction Command="{Binding ResetOuputPathErrorContentCommand}"/>
+                                    </i:EventTrigger>
+                                </i:Interaction.Triggers>
+                            </TextBox>
+                        </DockPanel>
+                        <Label Style="{StaticResource ErrorLabelStyle}" Content="{Binding OuputPathErrorContent}"/>
 
-                <Label Style="{StaticResource WrapLabelStyle}" Content="输出文件名"/>
-                <TextBox VerticalContentAlignment="Center" 
-                         Height="25"
+                        <Label Style="{StaticResource WrapLabelStyle}" Content="输出文件名"/>
+                        <TextBox VerticalContentAlignment="Center" 
                          Text="{Binding OutputFileNamePattern}">
-                </TextBox>
-                <WrapPanel>
-                    <CheckBox VerticalContentAlignment="Center"
+                        </TextBox>
+                        <WrapPanel>
+                            <CheckBox VerticalContentAlignment="Center"
                               IsChecked="{Binding IsEnableOriginFileName}">
-                        <Label>原文件名 {name}</Label>
-                    </CheckBox>
-                    <CheckBox VerticalContentAlignment="Center"
+                                <Label>原文件名 {name}</Label>
+                            </CheckBox>
+                            <CheckBox VerticalContentAlignment="Center"
                               IsChecked="{Binding IsEnableIndex}">
-                        <Label>序号 {index}</Label>
-                    </CheckBox>
-                    <CheckBox VerticalContentAlignment="Center"
+                                <Label>序号 {index}</Label>
+                            </CheckBox>
+                            <CheckBox VerticalContentAlignment="Center"
                               IsChecked="{Binding IsEnableTime}">
-                        <Label>时间日期 {time}</Label>
-                    </CheckBox>
-                    <CheckBox VerticalContentAlignment="Center"
+                                <Label>时间日期 {time}</Label>
+                            </CheckBox>
+                            <CheckBox VerticalContentAlignment="Center"
                               IsChecked="{Binding IsEnableQuality}">
-                        <Label>图片质量 {quality}</Label>
-                    </CheckBox>
-                </WrapPanel>
+                                <Label>图片质量 {quality}</Label>
+                            </CheckBox>
+                        </WrapPanel>
 
-                <Label Style="{StaticResource WrapLabelStyle}" Content="目标文件夹已有该图片时："/>
-                <WrapPanel>
-                    <RadioButton VerticalContentAlignment="Center"
+                        <Label Style="{StaticResource WrapLabelStyle}" Content="目标文件夹已有该图片时："/>
+                        <WrapPanel>
+                            <RadioButton VerticalContentAlignment="Center"
                                  IsChecked="{Binding IsCheckDontCoverExist}">
-                        <Label Style="{StaticResource WrapLabelStyle}" Content="不保存结果"/>
-                    </RadioButton>
-                    <RadioButton VerticalContentAlignment="Center">
-                        <Label Style="{StaticResource WrapLabelStyle}" Content="保存并覆盖"/>
-                    </RadioButton>
-                </WrapPanel>
-            </StackPanel>
-        </Grid>
+                                <Label Style="{StaticResource WrapLabelStyle}" Content="不保存结果"/>
+                            </RadioButton>
+                            <RadioButton VerticalContentAlignment="Center">
+                                <Label Style="{StaticResource WrapLabelStyle}" Content="保存并覆盖"/>
+                            </RadioButton>
+                        </WrapPanel>
+                    </StackPanel>
+                </Grid>
 
-        <Grid Grid.Row="3">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="1*"/>
-                <ColumnDefinition Width="1*"/>
-            </Grid.ColumnDefinitions>
-            <ProgressBar Grid.Column="0" 
-                         Grid.ColumnSpan="2" 
-                         x:Name="ProcessProgressBar"
-                         Value="{Binding ProcessedPercent}"/>
-            <TextBlock Text="{Binding ProcessedInstruction}"
-                       HorizontalAlignment="Right"
-                       VerticalAlignment="Center"
-                       Grid.Column="0"
-                       Margin="0 0 4 0"/>
-            <TextBlock Text="{Binding ElementName=ProcessProgressBar, Path=Value, Converter={StaticResource ProgressBarValueRound}}"
-                       HorizontalAlignment="Left"
-                       VerticalAlignment="Center"
-                       Grid.Column="1"
-                       Margin="4 0 0 0"/>
+                
+            </Grid>
         </Grid>
+        
     </Grid>
-</Window>
+
+</fw:AcrylicWindow>
