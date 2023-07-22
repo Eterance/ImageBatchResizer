@@ -1,0 +1,176 @@
+﻿<UserControl x:Class="ImageBatchResizer.Views.Controls.ModeControl"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:ImageBatchResizer.Views.Controls"
+             xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+             xmlns:uc="clr-namespace:ImageBatchResizer.Views.Controls"
+             mc:Ignorable="d" 
+             d:DesignHeight="450" d:DesignWidth="800">
+
+    <StackPanel Orientation="Vertical">        
+        <WrapPanel Orientation="Horizontal">
+            <RadioButton x:Name="FileSizeModeRadioButton"
+                                 IsChecked="{Binding IsFileSizeFirstMode}"
+                                 Margin="8 8 0 0"
+                                 VerticalContentAlignment="Center">
+                <Label>文件大小优先</Label>
+            </RadioButton>
+            <RadioButton x:Name="ResModeRadioButton"
+                                 IsChecked="{Binding IsResFirstMode}"
+                                 Margin="8 8 0 0"
+                                 VerticalContentAlignment="Center">
+                <Label>分辨率优先</Label>
+            </RadioButton>
+        </WrapPanel>
+        
+        <!-- 大小优先设置 -->
+        <StackPanel Orientation="Vertical"
+                    CanVerticallyScroll="True"
+                    Visibility="{Binding ElementName=FileSizeModeRadioButton, Path=IsChecked, Converter={StaticResource IsCheck2VisibilityConverter}}">
+            <uc:FileSizeParamatersControl DataContext="{Binding .}"
+                                      Margin="0 24 0 0"
+                                    MaxWidth="600"/>
+            <WrapPanel Orientation="Horizontal"
+                        Margin="0 24 0 0">
+                <ui:ToggleSwitch Margin="0 0 0 0"
+                              IsChecked="{Binding IsDeleteSmallerThanTarget}">
+                    <TextBlock TextWrapping="WrapWithOverflow">删除直接转换后小于目标大小区间的文件</TextBlock>
+                </ui:ToggleSwitch>
+
+                <ui:SymbolIcon Symbol="QuestionCircle20"
+                           VerticalAlignment="Stretch"
+                           Margin="8 0 0 0"
+                           Visibility="{Binding Path=(ToolTipService.ToolTip), Converter={StaticResource EmptyStringToVisibilityConverter}, RelativeSource={RelativeSource Self}}"
+                           ToolTipService.ToolTip="二分法第 0 次尝试（首次尝试）使用原分辨率压缩，即直接转换。如果大小小于目标区间上限则结束，否则继续二分法。如果直接转换得到的图像大小不仅小于目标区间上限，还小于目标区间下限，开启此选项会将此结果删除。不建议开启此选项，除非你完全不想要有图像的大小比目标区间还小。"/>
+            </WrapPanel>
+
+            <WrapPanel Orientation="Horizontal"
+                        Margin="0 24 0 0">
+                <ui:ToggleSwitch Margin="0 0 0 0"
+                              IsChecked="{Binding IsEnableResLowerLimit}">
+                    <TextBlock TextWrapping="WrapWithOverflow">启用分辨率限制</TextBlock>
+                </ui:ToggleSwitch>
+
+                <ui:SymbolIcon Symbol="QuestionCircle20"
+                           VerticalAlignment="Stretch"
+                           Margin="8 0 0 0"
+                           ToolTipService.ToolTip="如果启用该选项，则当图像压缩至目标大小区间后，还会进一步检查其分辨率是否符合下面的要求，以及执行下面选定的操作。"/>
+            </WrapPanel>
+
+            <StackPanel Orientation="Vertical" 
+                        IsEnabled="{Binding IsEnableResLowerLimit}"
+                        Margin="24 24 0 0">
+                <uc:ResolutionParametersControl DataContext="{Binding .}"
+                                          Margin="0 0 0 0"
+                                        MaxWidth="600"/>
+
+                <Label Margin="0 24 0 0">
+                    <TextBlock TextWrapping="WrapWithOverflow" Text="输出图片分辨率小于下限时："/>
+                </Label>
+
+                <StackPanel Orientation="Vertical"
+                                    Margin="4 8 0 0">
+
+                    <RadioButton VerticalContentAlignment="Center"
+                                             IsChecked="{Binding FileSizeFirst_DoNothing}">
+                        <Label>
+                            <TextBlock TextWrapping="WrapWithOverflow" Text="保留此图片，什么也不做"/>
+                        </Label>
+                    </RadioButton>
+                    <RadioButton VerticalContentAlignment="Center"
+                                             IsChecked="{Binding FileSizeFirst_Delete}">
+                        <Label>
+                            <TextBlock TextWrapping="WrapWithOverflow" Text="删除此图片"/>
+                        </Label>
+                    </RadioButton>
+                    <RadioButton VerticalContentAlignment="Center"
+                                             IsChecked="{Binding FileSizeFirst_IgnoreSizeLimit}">
+                        <Label>
+                            <TextBlock TextWrapping="WrapWithOverflow" Text="忽略目标大小区间限制，重新调整至分辨率下限"/>
+                        </Label>
+                    </RadioButton>
+                </StackPanel>
+            </StackPanel>
+        </StackPanel>
+
+
+        <!-- 分辨率优先设置 -->
+        <StackPanel Orientation="Vertical"
+                    Visibility="{Binding ElementName=ResModeRadioButton, Path=IsChecked, Converter={StaticResource IsCheck2VisibilityConverter}}">
+            <uc:ResolutionParametersControl DataContext="{Binding .}"
+                                          Margin="0 24 0 0"
+                                        MaxWidth="600"/>
+
+            <WrapPanel Orientation="Horizontal"
+                        Margin="0 24 0 0">
+                <ui:ToggleSwitch Margin="0 0 0 0"
+                              IsChecked="{Binding IsEnableTargetSizeLimit}">
+                    <TextBlock TextWrapping="WrapWithOverflow">启用文件大小限制</TextBlock>
+                </ui:ToggleSwitch>
+
+                <ui:SymbolIcon Symbol="QuestionCircle20"
+                           VerticalAlignment="Stretch"
+                           Margin="8 0 0 0"
+                           ToolTipService.ToolTip="如果启用该选项，则当图像压缩至目标分辨率后，还会进一步检查其文件大小是否符合下面的要求，以及执行下面选定的操作。"/>
+            </WrapPanel>
+
+            <StackPanel Orientation="Vertical" 
+                        IsEnabled="{Binding IsEnableTargetSizeLimit}"
+                        Margin="24 24 0 0">
+                <uc:FileSizeParamatersControl DataContext="{Binding .}"
+                                      Margin="0 0 0 0"
+                                    MaxWidth="600"/>
+                
+                <Label Margin="0 24 0 0">
+                    <TextBlock TextWrapping="WrapWithOverflow" Text="输出图片文件大小超出目标大小区间时："/>
+                </Label>
+
+                <StackPanel Orientation="Vertical"
+                                    Margin="4 8 0 0">
+
+                    <RadioButton VerticalContentAlignment="Center"
+                                             IsChecked="{Binding ResFirst_DoNothing}">
+                        <Label>
+                            <TextBlock TextWrapping="WrapWithOverflow" Text="保留此图片，什么也不做"/>
+                        </Label>
+                    </RadioButton>
+                    <RadioButton VerticalContentAlignment="Center"
+                                             IsChecked="{Binding ResFirst_Delete}">
+                        <Label>
+                            <TextBlock TextWrapping="WrapWithOverflow" Text="删除此图片"/>
+                        </Label>
+                    </RadioButton>
+                    <RadioButton VerticalContentAlignment="Center"
+                                             IsChecked="{Binding ResFirst_IgnoreSizeLimit}">
+                        <Label>
+                            <TextBlock TextWrapping="WrapWithOverflow" Text="忽略目标分辨率限制，重新调整至目标大小区间内"/>
+                        </Label>
+                    </RadioButton>
+                </StackPanel>
+            </StackPanel>
+        </StackPanel>
+
+        <WrapPanel Orientation="Horizontal"
+                        Margin="0 24 0 0">
+            <Label Margin="0 0 0 0">
+                <TextBlock Text="适应分辨率时的缩小策略"/>
+            </Label>
+
+            <ui:SymbolIcon Symbol="QuestionCircle20"
+                           VerticalAlignment="Stretch"
+                           Margin="8 0 0 0"
+                           ToolTipService.ToolTip="还没想好"/>
+        </WrapPanel>
+        <ComboBox Margin="4 8 0 0"
+                          ItemsSource="{Binding ResizeModeList}"
+                          SelectedValue="{Binding SelectedResizeModeModel}">
+            <ComboBox.ItemTemplate>
+                <DataTemplate>
+                    <TextBlock Text="{Binding Name}"/>
+                </DataTemplate>
+            </ComboBox.ItemTemplate>
+        </ComboBox>
+    </StackPanel>
+</UserControl>

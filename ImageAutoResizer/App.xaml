@@ -6,12 +6,25 @@
              xmlns:converters="clr-namespace:ImageBatchResizer.Converters"
              xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
              xmlns:fw="clr-namespace:SourceChord.FluentWPF;assembly=FluentWPF"
-             StartupUri="Views/MainWindow.xaml">
+             Startup="Application_Startup"
+             Exit="Application_Exit">
     <Application.Resources>
         <ResourceDictionary>
             <converters:IsCheck2VisibilityConverter x:Key="IsCheck2VisibilityConverter"/>
             <converters:ProgressBarValueRound x:Key="ProgressBarValueRound"/>
             <converters:BoolInvertConverter x:Key="BoolInvertConverter"/>
+            <converters:EmptyStringToVisibilityConverter x:Key="EmptyStringToVisibilityConverter"/>
+
+            <Style x:Key="DataGridCheckBoxColumnStyle" BasedOn="{StaticResource DataGridCheckBoxElementDefaultStyle}" TargetType="{x:Type CheckBox}">
+                <!-- 
+                自定义样式 isreadonly 不起作用
+                https://stackoverflow.com/a/37584805
+                DataGridCheckBoxElementDefaultStyle 是 WPFUI 里的样式
+                -->
+                <Setter Property="IsHitTestVisible" Value="False"/>
+            </Style>
+            
+            <FontFamily x:Key="SegoeFluentIcons">pack://application:,,,/;component/Resources/Fonts/#Segoe Fluent Icons</FontFamily>
 
             <ResourceDictionary.MergedDictionaries>
                 <ResourceDictionary Source="Resources/ResDictionary.xaml"/>

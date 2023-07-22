@@ -1,0 +1,102 @@
+﻿<UserControl x:Class="ImageBatchResizer.Views.Controls.FilesControl"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:ImageBatchResizer.Views.Controls"
+             xmlns:i="http://schemas.microsoft.com/xaml/behaviors"
+             xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+             mc:Ignorable="d" 
+             d:DesignHeight="450" d:DesignWidth="800">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="1*"/>
+            <RowDefinition Height="{Binding BottomRowHeight, RelativeSource={RelativeSource AncestorType={x:Type local:FilesControl}}}"/>
+        </Grid.RowDefinitions>
+
+        <ui:DataGrid Grid.Row="0"
+                     Margin="4 4 4 0"
+                      IsReadOnly="{Binding IsEnableEdit, RelativeSource={RelativeSource AncestorType={x:Type local:FilesControl}}, Converter={StaticResource BoolInvertConverter}}"
+                      AllowDrop="True"
+                      ItemsSource="{Binding InputFileList}"
+                      SelectedItem="{Binding Path=SelectedPath, Mode=TwoWay}"
+                      AutoGenerateColumns="False"
+                      CanUserResizeRows="False"
+                      HeadersVisibility="All"
+                      RowHeaderWidth="24"
+                      SelectionUnit="CellOrRowHeader">
+            <ui:DataGrid.Columns>
+                <DataGridCheckBoxColumn Header="选择" ElementStyle="{StaticResource DataGridCheckBoxColumnStyle}" Binding="{Binding Chosen, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+                <DataGridTextColumn Header="文件名" IsReadOnly="True" Binding="{Binding Name}"/>
+                <DataGridTextColumn Header="路径" IsReadOnly="True" Binding="{Binding Path}" />
+                <DataGridTextColumn Header="转换后路径" IsReadOnly="True" Binding="{Binding ResizedPath}" />
+                <DataGridCheckBoxColumn Header="已处理" ElementStyle="{StaticResource DataGridCheckBoxColumnStyle}" Binding="{Binding Processed}" />
+            </ui:DataGrid.Columns>
+            <!-- https://stackoverflow.com/questions/40104765/bind-event-in-mvvm-and-pass-event-arguments-as-command-parameter -->
+            <i:Interaction.Triggers>
+                <i:EventTrigger EventName="Drop">
+                    <i:CallMethodAction TargetObject="{Binding}"
+                                        MethodName="DataGrid_Drop"/>
+                </i:EventTrigger>
+            </i:Interaction.Triggers>
+        </ui:DataGrid>
+
+        <DockPanel Grid.Row="1" 
+                       HorizontalAlignment="Stretch"
+                       VerticalAlignment="Stretch"
+                       LastChildFill="False"
+                       Margin="0 4 0 4" >
+            <ui:Button x:Name="Add_Button" VerticalAlignment="Stretch"
+                        Margin="0 0 4 0"
+                        DockPanel.Dock="Right"
+                        Command="{Binding AppendFilesCommand}"
+                        IsEnabled="{Binding IsEnableEdit, RelativeSource={RelativeSource AncestorType={x:Type local:FilesControl}}}">
+                <StackPanel Orientation="Horizontal">
+                    <ui:SymbolIcon Margin="0,0,6,0" Symbol="Add12" />
+                    <TextBlock Text="添加图像" />
+                </StackPanel>
+            </ui:Button>
+            <!--
+                <Button Padding="8 0 8 0"
+                        Margin="4" 
+                        DockPanel.Dock="Left"
+                        Click="OpenConsole_Click">
+                    控制台
+                </Button>-->
+            <ui:Button VerticalAlignment="Stretch"
+                        Margin="4 0 0 0"  
+                        DockPanel.Dock="Left"
+                        Command="{Binding DeleteChosenCommand}"
+                        IsEnabled="{Binding IsEnableEdit, RelativeSource={RelativeSource AncestorType={x:Type local:FilesControl}}}">
+                <StackPanel Orientation="Horizontal">
+                    <ui:FontIcon Margin="0,0,6,0"
+                                 FontSize="14"
+                                 FontFamily="Segoe Fluent Icons" 
+                                 Glyph="&#xe894;"/>
+                    <TextBlock Text="删除选中" />
+                </StackPanel>
+            </ui:Button>
+            <ui:Button VerticalAlignment="Stretch"
+                        Margin="4 0 0 0" 
+                       Appearance="Danger"
+                        DockPanel.Dock="Left"
+                        Command="{Binding DeleteAllCommand}"
+                        IsEnabled="{Binding IsEnableEdit, RelativeSource={RelativeSource AncestorType={x:Type local:FilesControl}}}">
+                <StackPanel Orientation="Horizontal">
+                    <ui:SymbolIcon Margin="0,0,6,0" Symbol="Delete16" />
+                    <TextBlock Text="删除全部" />
+                </StackPanel>
+            </ui:Button>
+            <ui:Button VerticalAlignment="Stretch"
+                        Margin="4 0 0 0" 
+                        DockPanel.Dock="Left"
+                        Command="{Binding ResetAllCommand}"
+                        IsEnabled="{Binding IsEnableEdit, RelativeSource={RelativeSource AncestorType={x:Type local:FilesControl}}}">
+                <StackPanel Orientation="Horizontal">
+                    <ui:SymbolIcon Margin="0,0,6,0" Symbol="ArrowReset20" />
+                    <TextBlock Text="重置状态" />
+                </StackPanel>
+            </ui:Button>
+        </DockPanel>
+    </Grid>
+</UserControl>

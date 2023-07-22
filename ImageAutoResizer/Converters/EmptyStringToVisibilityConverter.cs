@@ -12,19 +12,25 @@ namespace ImageBatchResizer.Converters
     /// <summary>
     /// 判断字符串是不是空的。
     /// </summary>
-    [ValueConversion(typeof(bool), typeof(bool))]
-    public class BoolInvertConverter : IValueConverter
+    [ValueConversion(typeof(string), typeof(Visibility))]
+    public class EmptyStringToVisibilityConverter : IValueConverter
     {
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
-            bool stringValue = (bool)value;
-            return !stringValue;
+            string stringValue = value as string;
+            if (string.IsNullOrEmpty(stringValue))
+            {
+                return Visibility.Collapsed;
+            }
+            else
+            {
+                return Visibility.Visible;
+            }
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
         {
-            bool stringValue = (bool)value;
-            return !stringValue;
+            throw new NotSupportedException();
         }
     }
 }

@@ -1,0 +1,70 @@
+﻿<UserControl x:Class="ImageBatchResizer.Views.Controls.InputParametersControl"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:ImageBatchResizer.Views.Controls"
+             xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+             xmlns:uc="clr-namespace:ImageBatchResizer.Views.Controls"
+             mc:Ignorable="d" 
+             d:DesignHeight="450" d:DesignWidth="800">
+
+    <StackPanel Orientation="Vertical">        
+        <uc:SwitchableTwoParametersControl Title="分辨率上限"
+                                               Margin="0 0 0 0"
+                                               LeftLableText="宽"
+                                               RightLableText="高"
+                                               LeftPlaceHolder="输入整数"
+                                               RightPlaceHolder="输入整数"
+                                               LeftValue="{Binding InputResUpperLimitWidth, Mode=TwoWay}"
+                                               RightValue="{Binding InputResUpperLimitHeight, Mode=TwoWay}"
+                                               LeftDefaultValue="10000"
+                                               RightDefaultValue="8000"
+                                               ToolTipContent="设置此项以在处理时过滤掉分辨率超出上限的图像。"
+                                               Minimum="1"
+                                               MaxDecimalPlaces="0"
+                                               IsChecked="{Binding IsEnableInputResUpperLimit, Mode=TwoWay}"/>
+
+        <uc:SwitchableTwoParametersControl Title="分辨率下限"
+                                               Margin="0 24 0 0"
+                                               LeftLableText="宽"
+                                               RightLableText="高"
+                                               LeftPlaceHolder="输入整数"
+                                               RightPlaceHolder="输入整数"
+                                               LeftValue="{Binding InputResLowerLimitWidth, Mode=TwoWay}"
+                                               RightValue="{Binding InputResLowerLimitHeight, Mode=TwoWay}"
+                                               LeftDefaultValue="1920"
+                                               RightDefaultValue="1200"
+                                               ToolTipContent="设置此项以在处理时过滤掉分辨率低于下限的图像。"
+                                               Minimum="1"
+                                               MaxDecimalPlaces="0"
+                                               IsChecked="{Binding IsEnableInputResLowerLimit, Mode=TwoWay}"/>
+
+        <WrapPanel Orientation="Horizontal"
+                        Margin="0 24 0 0">
+            <ui:ToggleSwitch VerticalAlignment="Stretch" 
+                              VerticalContentAlignment="Center"
+                              IsChecked="{Binding IsInputResLimitationAdaptPortraitImage}">
+                <TextBlock TextWrapping="WrapWithOverflow">分辨率限制自适应竖图</TextBlock>
+            </ui:ToggleSwitch>
+
+            <ui:SymbolIcon Symbol="QuestionCircle20"
+                           VerticalAlignment="Stretch"
+                           Margin="8 0 0 0"
+                           Visibility="{Binding Path=(ToolTipService.ToolTip), Converter={StaticResource EmptyStringToVisibilityConverter}, RelativeSource={RelativeSource Self}}"
+                           ToolTipService.ToolTip="当输入的图片是竖图（高大于宽）时，分辨率上下限是否自动适应。"/>
+        </WrapPanel>
+
+        <Label Margin="0 24 0 0">
+            <TextBlock>读取格式</TextBlock>
+        </Label>
+        <WrapPanel Margin="4">
+            <CheckBox Margin="4" IsChecked="{Binding IsAcceptBmp}">.bmp</CheckBox>
+            <CheckBox Margin="4" IsChecked="{Binding IsAcceptJpeg}">.jpg</CheckBox>
+            <CheckBox Margin="4" IsChecked="{Binding IsAcceptPng}">.png</CheckBox>
+            <CheckBox Margin="4" IsChecked="{Binding IsAcceptTga}">.tga</CheckBox>
+            <CheckBox Margin="4" IsChecked="{Binding IsAcceptTiff}">.tif</CheckBox>
+            <CheckBox Margin="4" IsChecked="{Binding IsAcceptWebP}">.webp</CheckBox>
+        </WrapPanel>
+    </StackPanel>
+</UserControl>

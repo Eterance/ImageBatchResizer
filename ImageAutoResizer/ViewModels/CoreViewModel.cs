@@ -41,12 +41,13 @@ namespace ImageBatchResizer.ViewModels
         private bool _isAcceptTiff = true;
         private bool _isAcceptWebP = true;
         private bool _isFileSizeFirstMode = true;
+        private bool _isResFirstMode = false;
         private double _targetSizeLowerLimit = 300;
         private double _targetSizeUpperLimit = 350;
-        private int _binarySearchTimesLimit = 20;
+        private double _binarySearchTimesLimit = 20;
         private bool _isDeleteSmallerThanTarget = false;
-        private int _targetResolutionWidthLowerLimit = 1920;
-        private int _targetResolutionHeightLowerLimit = 1200;
+        private double _targetResolutionWidthLowerLimit = 1920;
+        private double _targetResolutionHeightLowerLimit = 1200;
         private bool _isEnableResLowerLimit = false;
         private bool _isOutputResLimitationAdaptPortraitImage = false;
         private bool _fileSizeFirst_DoNothing = true;
@@ -59,10 +60,10 @@ namespace ImageBatchResizer.ViewModels
         private int _quality = 90;
         private string _outputPath = "";
         private string _outputFileNamePattern = "{name}";
-        private int _InputResUpperLimitWidth = 10000;
-        private int _InputResUpperLimitHeight = 8000;
-        private int _InputResLowerLimitWidth = 1920;
-        private int _InputResLowerLimitHeight = 1200;
+        private double _inputResUpperLimitWidth = 10000;
+        private double _InputResUpperLimitHeight = 8000;
+        private double _InputResLowerLimitWidth = 1920;
+        private double _InputResLowerLimitHeight = 1200;
         private bool _isEnableOriginFileName = true;
         private bool _isEnableIndex = false;
         private bool _isEnableTime;
@@ -133,15 +134,15 @@ namespace ImageBatchResizer.ViewModels
                 SetValue(ref _isEnableInputResUpperLimit, value);
             }
         }
-        public int InputResUpperLimitWidth
+        public double InputResUpperLimitWidth
         {
-            get => _InputResUpperLimitWidth;
+            get => _inputResUpperLimitWidth;
             set
             {
-                SetValue(ref _InputResUpperLimitWidth, value);
+                SetValue(ref _inputResUpperLimitWidth, value);
             }
         }
-        public int InputResUpperLimitHeight
+        public double InputResUpperLimitHeight
         {
             get => _InputResUpperLimitHeight;
             set
@@ -158,7 +159,7 @@ namespace ImageBatchResizer.ViewModels
                 SetValue(ref _isEnableInputResLowerLimit, value);
             }
         }
-        public int InputResLowerLimitWidth
+        public double InputResLowerLimitWidth
         {
             get => _InputResLowerLimitWidth;
             set
@@ -166,7 +167,7 @@ namespace ImageBatchResizer.ViewModels
                 SetValue(ref _InputResLowerLimitWidth, value);
             }
         }
-        public int InputResLowerLimitHeight
+        public double InputResLowerLimitHeight
         {
             get => _InputResLowerLimitHeight;
             set
@@ -242,6 +243,14 @@ namespace ImageBatchResizer.ViewModels
                 SetValue(ref _isFileSizeFirstMode, value);
             }
         }
+        public bool IsResFirstMode
+        {
+            get => _isResFirstMode;
+            set
+            {
+                SetValue(ref _isResFirstMode, value);
+            }
+        }
 
         #region 输出参数
         public double TargetSizeLowerLimit
@@ -260,7 +269,7 @@ namespace ImageBatchResizer.ViewModels
                 SetValue(ref _targetSizeUpperLimit, value);
             }
         }
-        public int BinarySearchTimesLimit
+        public double BinarySearchTimesLimit
         {
             get => _binarySearchTimesLimit;
             set
@@ -285,7 +294,7 @@ namespace ImageBatchResizer.ViewModels
             }
         }
 
-        public int TargetResolutionWidthLowerLimit
+        public double TargetResolutionWidthLowerLimit
         {
             get => _targetResolutionWidthLowerLimit;
             set
@@ -293,7 +302,7 @@ namespace ImageBatchResizer.ViewModels
                 SetValue(ref _targetResolutionWidthLowerLimit, value);
             }
         }
-        public int TargetResolutionHeightLowerLimit
+        public double TargetResolutionHeightLowerLimit
         {
             get => _targetResolutionHeightLowerLimit;
             set
@@ -825,9 +834,12 @@ namespace ImageBatchResizer.ViewModels
             });
             DeleteChosenCommand = new DelegateCommand(() => 
             {
-                if (SelectedPath != null) 
+                for (int i = 0; i < InputFileList.Count; i++)
                 {
-                    InputFileList.Remove(SelectedPath);
+                    if (InputFileList[i].Chosen == true)
+                    {
+                        InputFileList.Remove(InputFileList[i]);
+                    }
                 }
             });
             DeleteAllCommand = new DelegateCommand(() =>
@@ -1014,16 +1026,16 @@ namespace ImageBatchResizer.ViewModels
             var originWidth = imageInfo.Width;
             var originHeigth = imageInfo.Height;
             // 限制适应竖图
-            int inputResUpperLimitWidth = InputResUpperLimitWidth;
-            int inputResUpperLimitHeight = InputResUpperLimitHeight;
-            int inputResLowerLimitWidth = InputResLowerLimitWidth;
-            int inputResLowerLimitHeight = InputResLowerLimitHeight;
+            int inputResUpperLimitWidth = (int)InputResUpperLimitWidth;
+            int inputResUpperLimitHeight = (int)InputResUpperLimitHeight;
+            int inputResLowerLimitWidth = (int)InputResLowerLimitWidth;
+            int inputResLowerLimitHeight = (int)InputResLowerLimitHeight;
             if (IsInputResLimitationAdaptPortraitImage && (originHeigth > originWidth))
             {
-                inputResUpperLimitWidth = InputResUpperLimitHeight;
-                inputResUpperLimitHeight = InputResUpperLimitWidth;
-                inputResLowerLimitWidth = InputResLowerLimitHeight;
-                inputResLowerLimitHeight = InputResLowerLimitWidth;
+                inputResUpperLimitWidth = (int)InputResUpperLimitHeight;
+                inputResUpperLimitHeight = (int)InputResUpperLimitWidth;
+                inputResLowerLimitWidth = (int)InputResLowerLimitHeight;
+                inputResLowerLimitHeight = (int)InputResLowerLimitWidth;
             }
             // 跳过不在分辨率限制内的
             if (IsEnableInputResUpperLimit && (originWidth > inputResUpperLimitWidth || originHeigth > inputResUpperLimitHeight))
@@ -1261,7 +1273,7 @@ namespace ImageBatchResizer.ViewModels
             {
                 if (width < TargetResolutionWidthLowerLimit || height < TargetResolutionHeightLowerLimit)
                 {
-                    return (true, TargetResolutionWidthLowerLimit, TargetResolutionHeightLowerLimit);
+                    return (true, (int)TargetResolutionWidthLowerLimit, (int)TargetResolutionHeightLowerLimit);
                 }
                 else
                 {
@@ -1275,7 +1287,7 @@ namespace ImageBatchResizer.ViewModels
                 {
                     if (width < TargetResolutionWidthLowerLimit || height < TargetResolutionHeightLowerLimit)
                     {
-                        return (true, TargetResolutionWidthLowerLimit, TargetResolutionHeightLowerLimit);
+                        return (true, (int)TargetResolutionWidthLowerLimit, (int)TargetResolutionHeightLowerLimit);
                     }
                     else
                     {
@@ -1287,7 +1299,7 @@ namespace ImageBatchResizer.ViewModels
                 {
                     if (width < TargetResolutionHeightLowerLimit || height < TargetResolutionWidthLowerLimit)
                     {
-                        return (true, TargetResolutionHeightLowerLimit, TargetResolutionWidthLowerLimit);
+                        return (true, (int)TargetResolutionHeightLowerLimit, (int)TargetResolutionWidthLowerLimit);
                     }
                     else
                     {

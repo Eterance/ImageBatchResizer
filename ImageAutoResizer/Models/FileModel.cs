@@ -13,7 +13,16 @@ namespace ImageBatchResizer.Models
         private bool _Processed = false;
         private string _ResizedPath = "";
         private string _Path = "";
+        private bool _Chosen;
 
+        public bool Chosen
+        {
+            get => _Chosen;
+            set
+            {
+                SetValue(ref _Chosen, value);
+            }
+        }
         public string Name
         {
             get => _Name;
