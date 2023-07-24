@@ -43,7 +43,10 @@
                            VerticalAlignment="Stretch"
                            Margin="8 0 0 0"
                            Visibility="{Binding Path=(ToolTipService.ToolTip), Converter={StaticResource EmptyStringToVisibilityConverter}, RelativeSource={RelativeSource Self}}"
-                           ToolTipService.ToolTip="二分法第 0 次尝试（首次尝试）使用原分辨率压缩，即直接转换。如果大小小于目标区间上限则结束，否则继续二分法。如果直接转换得到的图像大小不仅小于目标区间上限，还小于目标区间下限，开启此选项会将此结果删除。不建议开启此选项，除非你完全不想要有图像的大小比目标区间还小。"/>
+                           ToolTipService.ToolTip="二分法第 0 次尝试（首次尝试）使用原分辨率压缩，即直接转换。如果大小小于目标区间上限则结束，否则继续二分法。如果直接转换得到的图像大小不仅小于目标区间上限，还小于目标区间下限，开启此选项会将此结果删除。不建议开启此选项，除非你完全不想要有图像的大小比目标区间还小。"
+                           ToolTipService.ShowOnDisabled="{StaticResource DefaultValue.ToolTipService.ShowOnDisabled}"
+                           ToolTipService.InitialShowDelay="{StaticResource DefaultValue.ToolTipService.InitialShowDelay}"
+                           ToolTipService.BetweenShowDelay="{StaticResource DefaultValue.ToolTipService.BetweenShowDelay}"/>
             </WrapPanel>
 
             <WrapPanel Orientation="Horizontal"
@@ -56,7 +59,10 @@
                 <ui:SymbolIcon Symbol="QuestionCircle20"
                            VerticalAlignment="Stretch"
                            Margin="8 0 0 0"
-                           ToolTipService.ToolTip="如果启用该选项，则当图像压缩至目标大小区间后，还会进一步检查其分辨率是否符合下面的要求，以及执行下面选定的操作。"/>
+                           ToolTipService.ToolTip="如果启用该选项，则当图像压缩至目标大小区间后，还会进一步检查其分辨率是否符合下面的要求，以及执行下面选定的操作。"
+                           ToolTipService.ShowOnDisabled="{StaticResource DefaultValue.ToolTipService.ShowOnDisabled}"
+                           ToolTipService.InitialShowDelay="{StaticResource DefaultValue.ToolTipService.InitialShowDelay}"
+                           ToolTipService.BetweenShowDelay="{StaticResource DefaultValue.ToolTipService.BetweenShowDelay}"/>
             </WrapPanel>
 
             <StackPanel Orientation="Vertical" 
@@ -113,7 +119,10 @@
                 <ui:SymbolIcon Symbol="QuestionCircle20"
                            VerticalAlignment="Stretch"
                            Margin="8 0 0 0"
-                           ToolTipService.ToolTip="如果启用该选项，则当图像压缩至目标分辨率后，还会进一步检查其文件大小是否符合下面的要求，以及执行下面选定的操作。"/>
+                           ToolTipService.ToolTip="如果启用该选项，则当图像压缩至目标分辨率后，还会进一步检查其文件大小是否符合下面的要求，以及执行下面选定的操作。"
+                           ToolTipService.ShowOnDisabled="{StaticResource DefaultValue.ToolTipService.ShowOnDisabled}"
+                           ToolTipService.InitialShowDelay="{StaticResource DefaultValue.ToolTipService.InitialShowDelay}"
+                           ToolTipService.BetweenShowDelay="{StaticResource DefaultValue.ToolTipService.BetweenShowDelay}"/>
             </WrapPanel>
 
             <StackPanel Orientation="Vertical" 
@@ -152,25 +161,11 @@
             </StackPanel>
         </StackPanel>
 
-        <WrapPanel Orientation="Horizontal"
-                        Margin="0 24 0 0">
-            <Label Margin="0 0 0 0">
-                <TextBlock Text="适应分辨率时的缩小策略"/>
-            </Label>
 
-            <ui:SymbolIcon Symbol="QuestionCircle20"
-                           VerticalAlignment="Stretch"
-                           Margin="8 0 0 0"
-                           ToolTipService.ToolTip="还没想好"/>
-        </WrapPanel>
-        <ComboBox Margin="4 8 0 0"
-                          ItemsSource="{Binding ResizeModeList}"
-                          SelectedValue="{Binding SelectedResizeModeModel}">
-            <ComboBox.ItemTemplate>
-                <DataTemplate>
-                    <TextBlock Text="{Binding Name}"/>
-                </DataTemplate>
-            </ComboBox.ItemTemplate>
-        </ComboBox>
+        <uc:ComboBoxControl Margin="0 24 0 0"
+                            Title="适应分辨率时的缩小策略"
+                            ToolTipContent="还没想好"
+                            ItemsSource="{Binding ResizeModeList, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"
+                            SelectedValue="{Binding SelectedResizeModeModel, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"/>
     </StackPanel>
 </UserControl>

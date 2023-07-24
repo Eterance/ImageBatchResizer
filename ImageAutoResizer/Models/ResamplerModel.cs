@@ -3,13 +3,13 @@ using SixLabors.ImageSharp.Processing.Processors.Transforms;
 
 namespace ImageBatchResizer.Models
 {
-    public class ResamplerModel
+    public class ResamplerModel: IModel
     {
-        public string Name { get; private set; }
+        public string DisplayName { get; private set; }
         public IResampler Resampler { get; private set; }
         public ResamplerModel(string name, IResampler resampler)
         {
-            Name = name;
+            DisplayName = name;
             Resampler = resampler;
         }
     }

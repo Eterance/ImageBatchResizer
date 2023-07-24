@@ -96,7 +96,7 @@ namespace ImageBatchResizer.ViewModels
         private bool _IsEnableStartButton = true;
         private string _StartButtonContent = "开始转换";
         private bool _IsEnableWebpUniqueArgs = false;
-        private int _EncodingMethod = 3;
+        private int _EncodingMethod = 4;
         private int _ParallelCount = 1;
         private bool _IsCheckDontCoverExist = true;
 
@@ -433,6 +433,14 @@ namespace ImageBatchResizer.ViewModels
                 }
             }
         }
+        public bool IsNotWebpLossyMode
+        {
+            get => !_IsWebpLossyMode;
+            set
+            {
+                SetValue(ref _IsWebpLossyMode, !value);
+            }
+        }
         public int SliderMinimum
         {
             get => _SliderMinimum;
@@ -489,6 +497,14 @@ namespace ImageBatchResizer.ViewModels
                 SetValue(ref _IsCheckDontCoverExist, value);
             }
         }
+        public bool IsCheckCoverExist
+        {
+            get => !_IsCheckDontCoverExist;
+            set
+            {
+                SetValue(ref _IsCheckDontCoverExist, !value);
+            }
+        }
 
         public ObservableCollection<FormatModel> FormatList { get; set; }
 
@@ -498,7 +514,7 @@ namespace ImageBatchResizer.ViewModels
             set
             {
                 SetValue(ref _selectedFormatModel, value);
-                if (value.Name == ".webp")
+                if (value.DisplayName == ".webp")
                 {
                     IsWebpEncoder = true;
                 }
@@ -507,15 +523,15 @@ namespace ImageBatchResizer.ViewModels
                     IsWebpEncoder = false;
                 }
                 // 根据编码器的不同，改变压缩的描述
-                if (value.Name == ".jpg" || (value.Name == ".webp" && IsWebpLossyMode))
+                if (value.DisplayName == ".jpg" || (value.DisplayName == ".webp" && IsWebpLossyMode))
                 {
                     LossyCompressUI();
                 }
-                else if(value.Name == ".png" || value.Name == ".tif")
+                else if(value.DisplayName == ".png" || value.DisplayName == ".tif")
                 {
                     LosslessCompressUI();
                 }
-                else if (value.Name == ".webp" && !IsWebpLossyMode)
+                else if (value.DisplayName == ".webp" && !IsWebpLossyMode)
                 {
                     LosslessCompressUI(100);
                 }
@@ -959,7 +975,7 @@ namespace ImageBatchResizer.ViewModels
                 }
                 if (item.Processed)
                 {
-                    Append2FullConsole($"{item.Name} 此前已被处理，跳过", true);
+                    Append2FullConsole($"{item.DisplayName} 此前已被处理，跳过", true);
                     ProcessedCount++;
                     continue;
                 }
@@ -1014,10 +1030,10 @@ namespace ImageBatchResizer.ViewModels
         private async Task<(bool, bool, long)> SingleProcessAsync(List<string> list, FileModel item, CancellationToken token = default)
         {
             long disk_cost = 0;
-            var originalExt = Path.GetExtension(item.Name);
+            var originalExt = Path.GetExtension(item.DisplayName);
             if (originalExt != null && list.Contains(originalExt) == false)
             {
-                Append2FullConsole($"{item.Name} 扩展名不在允许读取的格式中，跳过");
+                Append2FullConsole($"{item.DisplayName} 扩展名不在允许读取的格式中，跳过");
                 item.Processed = true;
                 ProcessedCount++;
                 return (true, false, disk_cost);
@@ -1053,11 +1069,11 @@ namespace ImageBatchResizer.ViewModels
                 return (true, false, disk_cost);
             }
             var start_time = DateTime.Now;
-            var temp_filename = Path.Combine(OutputPath, $"temp{SelectedFormatModel.Name}");
+            var temp_filename = Path.Combine(OutputPath, $"temp{SelectedFormatModel.DisplayName}");
 
             using (Image originImage = await Image.LoadAsync(item.Path))
             {
-                Append2FullConsole($"{item.Name} 开始处理");
+                Append2FullConsole($"{item.DisplayName} 开始处理");
                 using (MemoryStream memoryStream = new MemoryStream())
                 {
                     if (IsFileSizeFirstMode)
@@ -1071,21 +1087,21 @@ namespace ImageBatchResizer.ViewModels
                         long fileSizeInBytes = memoryStream.Length;
                         //disk_cost += fileSizeInBytes;
                         //total_disk_cost += disk_cost;
-                        Append2FullConsole($"{item.Name} 分辨率未改变 ({originWidth}×{originHeigth})，直接保存的大小：{Math.Round((double)fileSizeInBytes / 1024, 3)} KiB");
+                        Append2FullConsole($"{item.DisplayName} 分辨率未改变 ({originWidth}×{originHeigth})，直接保存的大小：{Math.Round((double)fileSizeInBytes / 1024, 3)} KiB");
                         if (fileSizeInBytes < TargetSizeUpperLimit * 1024)
                         {
                             item.Processed = true;
                             if (fileSizeInBytes < TargetSizeLowerLimit * 1024 && IsDeleteSmallerThanTarget)
                             {
                                 //File.Delete(temp_filename);
-                                Append2FullConsole($"{item.Name} 直接转换的结果被删除，因为小于文件大小区间。耗时：{(DateTime.Now - start_time).TotalSeconds} 秒，磁盘写入 {Math.Round((double)disk_cost / 1024, 3)} KiB");
+                                Append2FullConsole($"{item.DisplayName} 直接转换的结果被删除，因为小于文件大小区间。耗时：{(DateTime.Now - start_time).TotalSeconds} 秒，磁盘写入 {Math.Round((double)disk_cost / 1024, 3)} KiB");
                                 item.Processed = true;
                                 ProcessedCount++;
                                 return (true, false, disk_cost);
                             }
                             else
                             {
-                                var final_filename = Path.Combine(OutputPath, $"{RenameResult(Path.GetFileNameWithoutExtension(item.Name))}{SelectedFormatModel.Name}");
+                                var final_filename = Path.Combine(OutputPath, $"{RenameResult(Path.GetFileNameWithoutExtension(item.DisplayName))}{SelectedFormatModel.DisplayName}");
                                 var existence = File.Exists(final_filename);
                                 if (File.Exists(final_filename) && IsCheckDontCoverExist)
                                 {
@@ -1099,7 +1115,7 @@ namespace ImageBatchResizer.ViewModels
                                     await File.WriteAllBytesAsync(final_filename, memoryStream.ToArray(), token);
                                     disk_cost += memoryStream.Length;
                                     item.ResizedPath = final_filename;
-                                    Append2FullConsole($"{item.Name} 的结果已{(existence?"覆盖":"保存")}至 {final_filename}，耗时：{(DateTime.Now - start_time).TotalSeconds} 秒，磁盘写入 {Math.Round((double)disk_cost / 1024, 3)} KiB", true);
+                                    Append2FullConsole($"{item.DisplayName} 的结果已{(existence?"覆盖":"保存")}至 {final_filename}，耗时：{(DateTime.Now - start_time).TotalSeconds} 秒，磁盘写入 {Math.Round((double)disk_cost / 1024, 3)} KiB", true);
                                     item.Processed = true;
                                     ProcessedCount++;
                                     return (true, true, disk_cost);
@@ -1108,7 +1124,7 @@ namespace ImageBatchResizer.ViewModels
                         }
                         else
                         {
-                            (int resized_width, int resized_height, _) = await BinarySearchShrink(item.Name, originImage, SelectedFormatModel.Encoder, memoryStream, token);
+                            (int resized_width, int resized_height, _) = await BinarySearchShrink(item.DisplayName, originImage, SelectedFormatModel.Encoder, memoryStream, token);
                             // 重新读取一下实际处理后的边长
                             memoryStream.Position = 0;
                             imageInfo = await Image.IdentifyAsync(memoryStream);
@@ -1127,7 +1143,7 @@ namespace ImageBatchResizer.ViewModels
                                     if (FileSizeFirst_Delete)
                                     {
                                         //File.Delete(temp_filename);
-                                        Append2FullConsole($"{item.Name} 转换的结果被删除，{resized_width}×{resized_height}, {width_percentage}% 宽 {height_percentage}% 高, {pixel_percentage}% 像素, 耗时：{(DateTime.Now - start_time).TotalSeconds} 秒，磁盘写入 {Math.Round((double)disk_cost / 1024, 3)} KiB");
+                                        Append2FullConsole($"{item.DisplayName} 转换的结果被删除，{resized_width}×{resized_height}, {width_percentage}% 宽 {height_percentage}% 高, {pixel_percentage}% 像素, 耗时：{(DateTime.Now - start_time).TotalSeconds} 秒，磁盘写入 {Math.Round((double)disk_cost / 1024, 3)} KiB");
                                         item.Processed = true;
                                         ProcessedCount++;
                                         return (true, false, disk_cost);
@@ -1155,14 +1171,14 @@ namespace ImageBatchResizer.ViewModels
                                         pixel_percentage = ((resized_width * resized_height) / (double)(originImage.Width * originImage.Height) * 100).ToString("f2");
                                         Append2FullConsole($"SaveAsync 耗时 {(DateTime.Now - st1).TotalSeconds} 秒");
                                         
-                                        Append2FullConsole($"{item.Name} 的分辨率重新设置为 {resized_width}×{resized_height}, {width_percentage}% 宽 {height_percentage}% 高, {pixel_percentage}% 像素, {Math.Round((double)fileSizeInBytes / 1024, 3)} KiB");
+                                        Append2FullConsole($"{item.DisplayName} 的分辨率重新设置为 {resized_width}×{resized_height}, {width_percentage}% 宽 {height_percentage}% 高, {pixel_percentage}% 像素, {Math.Round((double)fileSizeInBytes / 1024, 3)} KiB");
                                         //disk_cost += file_size;
                                         //total_disk_cost += fileSizeInBytes;
                                     }
                                     // 不做处理
                                 }
                             }
-                            var final_filename = Path.Combine(OutputPath, $"{RenameResult(Path.GetFileNameWithoutExtension(item.Name))}{SelectedFormatModel.Name}");
+                            var final_filename = Path.Combine(OutputPath, $"{RenameResult(Path.GetFileNameWithoutExtension(item.DisplayName))}{SelectedFormatModel.DisplayName}");
                             var existence = File.Exists(final_filename);
                             if (File.Exists(final_filename) && IsCheckDontCoverExist)
                             {
@@ -1177,7 +1193,7 @@ namespace ImageBatchResizer.ViewModels
                                 if (token.IsCancellationRequested) throw new OperationCanceledException(token);
                                 disk_cost += memoryStream.Length;
                                 item.ResizedPath = final_filename;
-                                Append2FullConsole($"{item.Name} 转换的结果已{(existence ? "覆盖" : "保存")}至 {final_filename}，{resized_width}×{resized_height}, {width_percentage}% 宽 {height_percentage}% 高, {pixel_percentage}% 像素, 耗时：{(DateTime.Now - start_time).TotalSeconds} 秒，磁盘写入 {Math.Round((double)disk_cost / 1024, 3)} KiB", true);
+                                Append2FullConsole($"{item.DisplayName} 转换的结果已{(existence ? "覆盖" : "保存")}至 {final_filename}，{resized_width}×{resized_height}, {width_percentage}% 宽 {height_percentage}% 高, {pixel_percentage}% 像素, 耗时：{(DateTime.Now - start_time).TotalSeconds} 秒，磁盘写入 {Math.Round((double)disk_cost / 1024, 3)} KiB", true);
                                 item.Processed = true;
                                 ProcessedCount++;
                                 return (true, true, disk_cost);
@@ -1321,7 +1337,7 @@ namespace ImageBatchResizer.ViewModels
 
         private void SetupSelectedEncoder()
         {
-            if (SelectedFormatModel.Name == ".webp")
+            if (SelectedFormatModel.DisplayName == ".webp")
             {
                 SelectedFormatModel.Encoder = new WebpEncoder()
                 {
@@ -1330,21 +1346,21 @@ namespace ImageBatchResizer.ViewModels
                     Method = (WebpEncodingMethod)EncodingMethod
                 };
             }
-            else if (SelectedFormatModel.Name == ".jpg")
+            else if (SelectedFormatModel.DisplayName == ".jpg")
             {
                 SelectedFormatModel.Encoder = new JpegEncoder()
                 {
                     Quality = Quality
                 };
             }
-            else if (SelectedFormatModel.Name == ".png")
+            else if (SelectedFormatModel.DisplayName == ".png")
             {
                 SelectedFormatModel.Encoder = new PngEncoder()
                 {
                     CompressionLevel = (PngCompressionLevel)Quality
                 };
             }
-            else if (SelectedFormatModel.Name == ".tif")
+            else if (SelectedFormatModel.DisplayName == ".tif")
             {
                 SelectedFormatModel.Encoder = new TiffEncoder()
                 {

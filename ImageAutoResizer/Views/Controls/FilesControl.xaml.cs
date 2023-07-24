@@ -27,7 +27,7 @@ namespace ImageBatchResizer.Views.Controls
         }
 
         public static readonly DependencyProperty BottomRowHeightProperty =
-            DependencyProperty.Register("BottomRowHeight", typeof(double), typeof(FilesControl), new PropertyMetadata(40.0));
+            DependencyProperty.Register("BottomRowHeight", typeof(double), typeof(FilesControl), new FrameworkPropertyMetadata(40.0, FrameworkPropertyMetadataOptions.BindsTwoWayByDefault));
 
         public double BottomRowHeight
         {
@@ -36,7 +36,7 @@ namespace ImageBatchResizer.Views.Controls
         }
 
         public static readonly DependencyProperty IsEnableEditProperty =
-            DependencyProperty.Register("IsEnableEdit", typeof(bool), typeof(FilesControl), new PropertyMetadata(true));
+            DependencyProperty.Register("IsEnableEdit", typeof(bool), typeof(FilesControl), new FrameworkPropertyMetadata(true, FrameworkPropertyMetadataOptions.BindsTwoWayByDefault));
 
         public bool IsEnableEdit
         {

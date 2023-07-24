@@ -21,7 +21,7 @@
                   RowHeaderWidth="24"
                   SelectionUnit="CellOrRowHeader">
             <DataGrid.Columns>
-                <DataGridTextColumn Header="文件名" IsReadOnly="True" Binding="{Binding Name}"/>
+                <DataGridTextColumn Header="文件名" IsReadOnly="True" Binding="{Binding DisplayName}"/>
                 <DataGridTextColumn Header="路径" IsReadOnly="True" Binding="{Binding Path}" />
                 <DataGridTextColumn Header="转换后路径" IsReadOnly="True" Binding="{Binding ResizedPath}" />
                 <DataGridCheckBoxColumn Header="已处理" IsReadOnly="{Binding IsEnableParametersPanel, Converter={StaticResource BoolInvertConverter}}" Binding="{Binding Processed}" />

@@ -1,0 +1,66 @@
+﻿<UserControl x:Class="ImageBatchResizer.Views.Controls.OutputParametersControl"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:ImageBatchResizer.Views.Controls"
+             xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+             xmlns:uc="clr-namespace:ImageBatchResizer.Views.Controls"
+             mc:Ignorable="d" 
+             d:DesignHeight="450" d:DesignWidth="800">
+    <StackPanel Orientation="Vertical">
+        <uc:ComboBoxControl Margin="0 0 0 0"
+                            Title="输出格式"
+                            ToolTipVisibility="Collapsed"
+                            ToolTipContent="图像分辨率被缩小时，采用什么算法丢弃像素，以及计算剩余像素的颜色。默认为 Lanczos3。"
+                            ItemsSource="{Binding FormatList, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"
+                            SelectedValue="{Binding SelectedFormatModel, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"/>
+        
+        <StackPanel Orientation="Vertical" 
+                    Visibility="{Binding IsWebpEncoder, Converter={StaticResource IsCheck2VisibilityConverter}}"
+                    Margin="0 24 0 0">
+
+            <uc:LabelWithToolTipControl Text="Webp 压缩模式"
+                                        ToolTipVisibility="Collapsed"
+                                        ToolTipContent=""/>
+
+            <WrapPanel Orientation="Horizontal"
+                       Margin="4 0 0 0">
+                <RadioButton IsChecked="{Binding IsWebpLossyMode}"
+                             Margin="0 8 0 0"
+                             VerticalContentAlignment="Center">
+                    <Label>有损</Label>
+                </RadioButton>
+                <RadioButton Margin="0 8 0 0"
+                             IsChecked="{Binding IsNotWebpLossyMode}"
+                             VerticalContentAlignment="Center">
+                    <Label>无损</Label>
+                </RadioButton>
+            </WrapPanel>
+        </StackPanel>
+
+
+        <uc:SliderWithTextboxControl Margin="0 24 0 0"
+                                     Title="{Binding CompressDescrption}"
+                                     ToolTipContent="有损压缩时：增加数值会增加图像的质量，但同时也会增加图像的文件大小；较低的值会导致更高程度的压缩，但可能会带来视觉上的损失，如图像细节模糊或失真。&#x0a;&#x0a;无损压缩时：较高的值会导致图像文件更大，而较低的值则会使文件更小，但是不论如何都不会影响图像质量。"
+                                     Maximum="{Binding SliderMaximum}" 
+                                     Minimum="{Binding SliderMinimum}"
+                                     Value="{Binding Quality}"
+                                     Visibility="{Binding IsEnableCompressAdjust, Converter={StaticResource IsCheck2VisibilityConverter}}"/>
+
+        <uc:SliderWithTextboxControl Margin="0 24 0 0"
+                                     Title="编码质量"
+                                     ToolTipContent="等级越高，图片编码的质量越好，但是编码速度越慢。默认为 4。"
+                                     Maximum="6" 
+                                     Minimum="0"
+                                     Value="{Binding EncodingMethod}"
+                                     Visibility="{Binding IsEnableWebpUniqueArgs, Converter={StaticResource IsCheck2VisibilityConverter}}"/>
+
+        <uc:ComboBoxControl Margin="0 24 0 0"
+                            Title="重采样算法"
+                            ToolTipContent="图像分辨率被缩小时，采用什么算法丢弃像素，以及计算剩余像素的颜色。默认为 Lanczos3。"
+                            ItemsSource="{Binding ResamplerList, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"
+                            SelectedValue="{Binding SelectedResamplerModel, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"/>
+
+    </StackPanel>
+</UserControl>

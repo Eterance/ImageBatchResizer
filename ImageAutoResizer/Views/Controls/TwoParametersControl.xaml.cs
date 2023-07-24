@@ -25,8 +25,10 @@ namespace ImageBatchResizer.Views.Controls
             InitializeComponent();
         }
 
+        // 默认双向绑定
+        // https://stackoverflow.com/questions/25989018/wpf-usercontrol-twoway-binding-dependency-property
         public static readonly DependencyProperty TitleProperty =
-            DependencyProperty.Register("Title", typeof(string), typeof(TwoParametersControl), new PropertyMetadata(""));
+            DependencyProperty.Register("Title", typeof(string), typeof(TwoParametersControl), new FrameworkPropertyMetadata("", FrameworkPropertyMetadataOptions.BindsTwoWayByDefault));
 
         public string Title
         {
@@ -35,7 +37,7 @@ namespace ImageBatchResizer.Views.Controls
         }
 
         public static readonly DependencyProperty ToolTipContentProperty =
-            DependencyProperty.Register("ToolTipContent", typeof(string), typeof(TwoParametersControl), new PropertyMetadata(""));
+            DependencyProperty.Register("ToolTipContent", typeof(string), typeof(TwoParametersControl), new FrameworkPropertyMetadata("", FrameworkPropertyMetadataOptions.BindsTwoWayByDefault));
 
         public string ToolTipContent
         {
@@ -44,7 +46,7 @@ namespace ImageBatchResizer.Views.Controls
         }
 
         public static readonly DependencyProperty LeftLableTextProperty =
-            DependencyProperty.Register("LeftLableText", typeof(string), typeof(TwoParametersControl), new PropertyMetadata(""));
+            DependencyProperty.Register("LeftLableText", typeof(string), typeof(TwoParametersControl), new FrameworkPropertyMetadata("", FrameworkPropertyMetadataOptions.BindsTwoWayByDefault));
 
         public string LeftLableText
         {
@@ -53,7 +55,7 @@ namespace ImageBatchResizer.Views.Controls
         }
 
         public static readonly DependencyProperty RightLableTextProperty =
-            DependencyProperty.Register("RightLableText", typeof(string), typeof(TwoParametersControl), new PropertyMetadata(""));
+            DependencyProperty.Register("RightLableText", typeof(string), typeof(TwoParametersControl), new FrameworkPropertyMetadata("", FrameworkPropertyMetadataOptions.BindsTwoWayByDefault));
 
         public string RightLableText
         {
@@ -62,7 +64,7 @@ namespace ImageBatchResizer.Views.Controls
         }
 
         public static readonly DependencyProperty LeftPlaceHolderProperty =
-            DependencyProperty.Register("LeftPlaceHolder", typeof(string), typeof(TwoParametersControl), new PropertyMetadata(""));
+            DependencyProperty.Register("LeftPlaceHolder", typeof(string), typeof(TwoParametersControl), new FrameworkPropertyMetadata("", FrameworkPropertyMetadataOptions.BindsTwoWayByDefault));
 
         public string LeftPlaceHolder
         {
@@ -71,7 +73,7 @@ namespace ImageBatchResizer.Views.Controls
         }
 
         public static readonly DependencyProperty RightPlaceHolderProperty =
-            DependencyProperty.Register("RightPlaceHolder", typeof(string), typeof(TwoParametersControl), new PropertyMetadata(""));
+            DependencyProperty.Register("RightPlaceHolder", typeof(string), typeof(TwoParametersControl), new FrameworkPropertyMetadata("", FrameworkPropertyMetadataOptions.BindsTwoWayByDefault));
 
         public string RightPlaceHolder
         {
@@ -80,7 +82,7 @@ namespace ImageBatchResizer.Views.Controls
         }
 
         public static readonly DependencyProperty LeftValueProperty =
-            DependencyProperty.Register("LeftValue", typeof(double), typeof(TwoParametersControl), new PropertyMetadata(1.0));
+            DependencyProperty.Register("LeftValue", typeof(double), typeof(TwoParametersControl), new FrameworkPropertyMetadata(1.0, FrameworkPropertyMetadataOptions.BindsTwoWayByDefault));
 
         public double LeftValue
         {
@@ -89,7 +91,7 @@ namespace ImageBatchResizer.Views.Controls
         }
 
         public static readonly DependencyProperty RightValueProperty =
-            DependencyProperty.Register("RightValue", typeof(double), typeof(TwoParametersControl), new PropertyMetadata(1.0));
+            DependencyProperty.Register("RightValue", typeof(double), typeof(TwoParametersControl), new FrameworkPropertyMetadata(1.0, FrameworkPropertyMetadataOptions.BindsTwoWayByDefault));
 
         public double RightValue
         {
@@ -98,7 +100,7 @@ namespace ImageBatchResizer.Views.Controls
         }
 
         public static readonly DependencyProperty LeftDefaultValueProperty =
-            DependencyProperty.Register("LeftDefaultValue", typeof(double), typeof(TwoParametersControl), new PropertyMetadata(1.0));
+            DependencyProperty.Register("LeftDefaultValue", typeof(double), typeof(TwoParametersControl), new FrameworkPropertyMetadata(1.0, FrameworkPropertyMetadataOptions.BindsTwoWayByDefault));
 
         public double LeftDefaultValue
         {
@@ -107,7 +109,7 @@ namespace ImageBatchResizer.Views.Controls
         }
 
         public static readonly DependencyProperty RightDefaultValueProperty =
-            DependencyProperty.Register("RightDefaultValue", typeof(double), typeof(TwoParametersControl), new PropertyMetadata(1.0));
+            DependencyProperty.Register("RightDefaultValue", typeof(double), typeof(TwoParametersControl), new FrameworkPropertyMetadata(1.0, FrameworkPropertyMetadataOptions.BindsTwoWayByDefault));
 
         public double RightDefaultValue
         {
@@ -116,7 +118,7 @@ namespace ImageBatchResizer.Views.Controls
         }
 
         public static readonly DependencyProperty MinimumProperty =
-            DependencyProperty.Register("Minimum", typeof(double), typeof(TwoParametersControl), new PropertyMetadata(1.0));
+            DependencyProperty.Register("Minimum", typeof(double), typeof(TwoParametersControl), new FrameworkPropertyMetadata(1.0, FrameworkPropertyMetadataOptions.BindsTwoWayByDefault));
 
         public double Minimum
         {
@@ -125,7 +127,7 @@ namespace ImageBatchResizer.Views.Controls
         }
 
         public static readonly DependencyProperty MaxDecimalPlacesProperty =
-            DependencyProperty.Register("MaxDecimalPlaces", typeof(int), typeof(TwoParametersControl), new PropertyMetadata(0));
+            DependencyProperty.Register("MaxDecimalPlaces", typeof(int), typeof(TwoParametersControl), new FrameworkPropertyMetadata(0, FrameworkPropertyMetadataOptions.BindsTwoWayByDefault));
 
         public int MaxDecimalPlaces
         {

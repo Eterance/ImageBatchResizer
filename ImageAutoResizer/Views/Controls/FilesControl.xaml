@@ -27,7 +27,7 @@
                       SelectionUnit="CellOrRowHeader">
             <ui:DataGrid.Columns>
                 <DataGridCheckBoxColumn Header="选择" ElementStyle="{StaticResource DataGridCheckBoxColumnStyle}" Binding="{Binding Chosen, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
-                <DataGridTextColumn Header="文件名" IsReadOnly="True" Binding="{Binding Name}"/>
+                <DataGridTextColumn Header="文件名" IsReadOnly="True" Binding="{Binding DisplayName}"/>
                 <DataGridTextColumn Header="路径" IsReadOnly="True" Binding="{Binding Path}" />
                 <DataGridTextColumn Header="转换后路径" IsReadOnly="True" Binding="{Binding ResizedPath}" />
                 <DataGridCheckBoxColumn Header="已处理" ElementStyle="{StaticResource DataGridCheckBoxColumnStyle}" Binding="{Binding Processed}" />

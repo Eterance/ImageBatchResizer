@@ -3,12 +3,14 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:System="clr-namespace:System;assembly=mscorlib"
              xmlns:local="clr-namespace:ImageBatchResizer.Views.Controls"
              xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
              xmlns:uc="clr-namespace:ImageBatchResizer.Views.Controls"
              mc:Ignorable="d" 
              d:DesignHeight="450" d:DesignWidth="800">
-
+    
+    
     <StackPanel Orientation="Vertical">        
         <uc:SwitchableTwoParametersControl Title="分辨率上限"
                                                Margin="0 0 0 0"
@@ -52,19 +54,22 @@
                            VerticalAlignment="Stretch"
                            Margin="8 0 0 0"
                            Visibility="{Binding Path=(ToolTipService.ToolTip), Converter={StaticResource EmptyStringToVisibilityConverter}, RelativeSource={RelativeSource Self}}"
-                           ToolTipService.ToolTip="当输入的图片是竖图（高大于宽）时，分辨率上下限是否自动适应。"/>
+                           ToolTipService.ToolTip="当输入的图片是竖图（高大于宽）时，分辨率上下限是否自动适应。"
+                           ToolTipService.ShowOnDisabled="{StaticResource DefaultValue.ToolTipService.ShowOnDisabled}"
+                           ToolTipService.InitialShowDelay="{StaticResource DefaultValue.ToolTipService.InitialShowDelay}"
+                           ToolTipService.BetweenShowDelay="{StaticResource DefaultValue.ToolTipService.BetweenShowDelay}"/>
         </WrapPanel>
 
         <Label Margin="0 24 0 0">
             <TextBlock>读取格式</TextBlock>
         </Label>
-        <WrapPanel Margin="4">
-            <CheckBox Margin="4" IsChecked="{Binding IsAcceptBmp}">.bmp</CheckBox>
-            <CheckBox Margin="4" IsChecked="{Binding IsAcceptJpeg}">.jpg</CheckBox>
-            <CheckBox Margin="4" IsChecked="{Binding IsAcceptPng}">.png</CheckBox>
-            <CheckBox Margin="4" IsChecked="{Binding IsAcceptTga}">.tga</CheckBox>
-            <CheckBox Margin="4" IsChecked="{Binding IsAcceptTiff}">.tif</CheckBox>
-            <CheckBox Margin="4" IsChecked="{Binding IsAcceptWebP}">.webp</CheckBox>
+        <WrapPanel Margin="4" MaxWidth="300" HorizontalAlignment="Left">
+            <CheckBox Margin="4 4 0 0" IsChecked="{Binding IsAcceptBmp}">.bmp</CheckBox>
+            <CheckBox Margin="4 4 0 0" IsChecked="{Binding IsAcceptJpeg}">.jpg</CheckBox>
+            <CheckBox Margin="4 4 0 0" IsChecked="{Binding IsAcceptPng}">.png</CheckBox>
+            <CheckBox Margin="4 4 0 0" IsChecked="{Binding IsAcceptTga}">.tga</CheckBox>
+            <CheckBox Margin="4 4 0 0" IsChecked="{Binding IsAcceptTiff}">.tif</CheckBox>
+            <CheckBox Margin="4 4 0 0" IsChecked="{Binding IsAcceptWebP}">.webp</CheckBox>
         </WrapPanel>
     </StackPanel>
 </UserControl>

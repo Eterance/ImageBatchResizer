@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace ImageBatchResizer.Models
 {
-    public class FileModel : ViewModelBase
+    public class FileModel : ViewModelBase, IModel
     {
         private string _Name = "";
         private bool _Processed = false;
@@ -23,7 +23,7 @@ namespace ImageBatchResizer.Models
                 SetValue(ref _Chosen, value);
             }
         }
-        public string Name
+        public string DisplayName
         {
             get => _Name;
             private set
@@ -57,7 +57,7 @@ namespace ImageBatchResizer.Models
         }
         public FileModel(string name, string path)
         {
-            Name = name;
+            DisplayName = name;
             Path = path;
             ResizedPath = "";
         }

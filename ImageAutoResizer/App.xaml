@@ -15,6 +15,11 @@
             <converters:BoolInvertConverter x:Key="BoolInvertConverter"/>
             <converters:EmptyStringToVisibilityConverter x:Key="EmptyStringToVisibilityConverter"/>
 
+            <System:Boolean x:Key="DefaultValue.ToolTipService.ShowOnDisabled">true</System:Boolean>
+            <System:Int32 x:Key="DefaultValue.ToolTipService.InitialShowDelay">200</System:Int32>
+            <System:Int32 x:Key="DefaultValue.ToolTipService.BetweenShowDelay">1000</System:Int32>
+
+
             <Style x:Key="DataGridCheckBoxColumnStyle" BasedOn="{StaticResource DataGridCheckBoxElementDefaultStyle}" TargetType="{x:Type CheckBox}">
                 <!-- 
                 自定义样式 isreadonly 不起作用

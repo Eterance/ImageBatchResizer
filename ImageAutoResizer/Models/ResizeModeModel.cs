@@ -2,13 +2,13 @@
 
 namespace ImageBatchResizer.Models
 {
-    public class ResizeModeModel
+    public class ResizeModeModel: IModel
     {
-        public string Name { get; private set; }
+        public string DisplayName { get; private set; }
         public ResizeMode Mode { get; private set; }
         public ResizeModeModel(string name, ResizeMode mode)
         {
-            Name = name;
+            DisplayName = name;
             Mode = mode;
         }
     }

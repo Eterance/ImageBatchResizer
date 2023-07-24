@@ -22,16 +22,9 @@
                                 Minimum="1"
                                 MaxDecimalPlaces="0"/>
 
-        <StackPanel Orientation="Horizontal" Margin="0 24 0 0">
-            <Label Margin="0 0 8 0">
-                <TextBlock Text="二分法尝试次数上限"/>
-            </Label>
-            <ui:SymbolIcon Symbol="QuestionCircle20"
-                           VerticalAlignment="Stretch"
-                           Margin="8 0 0 0"
-                           ToolTipService.ToolTip="图像大小未达到目标区间范围时，二分法最多可执行多少次。不建议修改该值。默认值为 20。"/>
-        </StackPanel>
-
+        <uc:LabelWithToolTipControl Margin="0 24 0 0"
+                                    Text="二分法尝试次数上限"
+                                    ToolTipContent="图像大小未达到目标区间范围时，二分法最多可执行多少次。不建议修改该值。默认值为 20。"/>
         <ui:NumberBox DockPanel.Dock="Left"
                       Margin="4 8 0 0"
                       Minimum="1"

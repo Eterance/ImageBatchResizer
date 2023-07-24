@@ -78,9 +78,9 @@
                     <ColumnDefinition Width="1*"/>
                 </Grid.ColumnDefinitions>
                 <ProgressBar Grid.Column="0"
-                                 Height="32"
-                                 Margin="4 0 4 0"
-                                 HorizontalAlignment="Stretch"
+                             Height="32"
+                             Margin="4 0 4 0"
+                             HorizontalAlignment="Stretch"
                              Grid.ColumnSpan="2" 
                              x:Name="ProcessProgressBar"
                              Value="{Binding ProcessedPercent}"/>
@@ -128,37 +128,35 @@
                         <TextBlock Text="输入参数与模式" />
                     </StackPanel>
                 </TabItem.Header>
-                <Grid>
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="1*"/>
-                        <ColumnDefinition Width="1*"/>
-                    </Grid.ColumnDefinitions>
-                    <!-- 左边的输入参数 -->
-                    <ScrollViewer VerticalScrollBarVisibility="Auto">
-                        <StackPanel Margin="16">
+                <ScrollViewer VerticalScrollBarVisibility="Auto">
+                    <WrapPanel Orientation="Horizontal"
+                                HorizontalAlignment="Center">
+                        <!-- 左边的输入参数 -->
+                        <StackPanel Margin="16"
+                                HorizontalAlignment="Right"
+                                MaxWidth="600">
                             <Label Margin="0 0 0 24">
                                 <ui:TextBlock FontTypography="Subtitle" Text="输入参数"/>
                             </Label>
                             <uc:InputParametersControl DataContext="{Binding .}"
-                                               MaxWidth="600"
-                                               IsEnabled="{Binding IsEnableParametersPanel}"/>
+                                            MaxWidth="600"
+                                            IsEnabled="{Binding IsEnableParametersPanel}"/>
                         </StackPanel>
-                    </ScrollViewer>
-                    <!-- 右边的模式参数 -->
-                    <ScrollViewer VerticalScrollBarVisibility="Auto"
-                                Grid.Column="1">
-                        <StackPanel Margin="16">
+                        <!-- 右边的模式参数 -->
+                        <StackPanel Margin="16"
+                                HorizontalAlignment="Left"
+                                MaxWidth="600">
                             <Label Margin="0 0 0 0">
                                 <ui:TextBlock FontTypography="Subtitle" Text="模式"/>
                             </Label>
                             <uc:ModeControl DataContext="{Binding .}" 
-                                               MaxWidth="600"
-                                               IsEnabled="{Binding IsEnableParametersPanel}"/>
+                                            IsEnabled="{Binding IsEnableParametersPanel}"/>
                         </StackPanel>
-                    </ScrollViewer>
-                </Grid>
+                    </WrapPanel>
+                </ScrollViewer>
             </TabItem>
 
+            <!-- 输出参数 -->
             <TabItem IsSelected="True">
                 <TabItem.Header>
                     <StackPanel Orientation="Horizontal">
@@ -166,13 +164,23 @@
                         <TextBlock Text="输出参数" />
                     </StackPanel>
                 </TabItem.Header>
-                <Grid>
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="1*"/>
-                        <ColumnDefinition Width="1*"/>
-                    </Grid.ColumnDefinitions>
-                    
-                </Grid>
+                <ScrollViewer VerticalScrollBarVisibility="Auto"
+                              Grid.ColumnSpan="2">
+                    <WrapPanel Orientation="Horizontal"
+                                HorizontalAlignment="Center">
+                        <!-- 左边的输出参数1 -->
+                        <StackPanel Margin="16"
+                                    MaxWidth="600">
+                            <uc:OutputParametersControl DataContext="{Binding .}"
+                                               IsEnabled="{Binding IsEnableParametersPanel}"/>
+                        </StackPanel>
+                        <StackPanel Margin="16"
+                                    MaxWidth="600">
+                            <uc:OtherParametersControl DataContext="{Binding .}"
+                                               IsEnabled="{Binding IsEnableParametersPanel}"/>
+                        </StackPanel>
+                    </WrapPanel>
+                </ScrollViewer>
             </TabItem>
 
             <TabItem>
@@ -216,179 +224,31 @@
                                                IsEnabled="{Binding IsEnableParametersPanel}"/>
                             </ScrollViewer>
 
-                            <!-- 右边的模式参数 -->
+                            <!-- 模式参数 -->
                             <ScrollViewer VerticalScrollBarVisibility="Auto"
-                                Grid.Column="1">
+                                          Grid.Column="1">
                                 <uc:ModeControl DataContext="{Binding .}" 
                                             Margin="4"
                                                MaxWidth="600"
                                                IsEnabled="{Binding IsEnableParametersPanel}"/>
                             </ScrollViewer>
 
-                            <StackPanel Grid.Column="2" Orientation="Vertical" Margin="8 0 8 0">
-                                <Label Style="{StaticResource WrapLabelStyle}" Content="输出格式"/>
-                                <ComboBox Margin="0 4 0 4"
-                          ItemsSource="{Binding FormatList}"
-                          SelectedValue="{Binding SelectedFormatModel}">
-                                    <ComboBox.ItemTemplate>
-                                        <DataTemplate>
-                                            <TextBlock Text="{Binding Name}"/>
-                                        </DataTemplate>
-                                    </ComboBox.ItemTemplate>
-                                </ComboBox>
+                            <!-- 输出参数 -->
+                            <ScrollViewer VerticalScrollBarVisibility="Auto"
+                                          Grid.Column="2">
+                                <uc:OutputParametersControl DataContext="{Binding .}"
+                                                   Margin="4"
+                                                   MaxWidth="600"
+                                                   IsEnabled="{Binding IsEnableParametersPanel}"/>
+                            </ScrollViewer>
 
-                                <Label Style="{StaticResource WrapLabelStyle}" 
-                       Content="Webp 压缩模式"
-                       Visibility="{Binding IsWebpEncoder, Converter={StaticResource IsCheck2VisibilityConverter}}"/>
-                                <WrapPanel Orientation="Horizontal"
-                           Visibility="{Binding IsWebpEncoder, Converter={StaticResource IsCheck2VisibilityConverter}}">
-                                    <RadioButton IsChecked="{Binding IsWebpLossyMode}"
-                                 Margin="4"
-                                 VerticalContentAlignment="Center">
-                                        <Label>有损</Label>
-                                    </RadioButton>
-                                    <RadioButton Margin="4"
-                                 VerticalContentAlignment="Center">
-                                        <Label>无损</Label>
-                                    </RadioButton>
-                                </WrapPanel>
-
-                                <Label Style="{StaticResource WrapLabelStyle}" 
-                       Content="{Binding CompressDescrption}" 
-                       Visibility="{Binding IsEnableCompressAdjust, Converter={StaticResource IsCheck2VisibilityConverter}}"/>
-                                <DockPanel Margin="0 4 0 4"
-                           Visibility="{Binding IsEnableCompressAdjust, Converter={StaticResource IsCheck2VisibilityConverter}}">
-                                    <TextBox Width="40" 
-                                 HorizontalContentAlignment="Center"
-                                 DockPanel.Dock="Left"
-                                 Text="{Binding ElementName=QualitySlider, Path=Value}"/>
-                                    <Slider x:Name="QualitySlider" 
-                                Maximum="{Binding SliderMaximum}" 
-                                            TickPlacement="Both"
-                                Minimum="{Binding SliderMinimum}" 
-                                Margin="8 0 8 0" 
-                                Value="{Binding Quality}" 
-                                SmallChange="1" 
-                                LargeChange="5"
-                                DockPanel.Dock="Right"
-                                IsSnapToTickEnabled="True"
-                                TickFrequency="1"/>
-                                </DockPanel>
-
-                                <StackPanel Visibility="{Binding IsEnableWebpUniqueArgs, Converter={StaticResource IsCheck2VisibilityConverter}}"
-                            Orientation="Vertical">
-                                    <Label Style="{StaticResource WrapLabelStyle}" 
-                       Content="编码质量"/>
-                                    <DockPanel Margin="0 4 0 4">
-                                        <TextBox Width="40" 
-                                 HorizontalContentAlignment="Center"
-                                 DockPanel.Dock="Left"
-                                 Text="{Binding ElementName=EncodingMethodSlider, Path=Value}"/>
-                                        <Slider x:Name="EncodingMethodSlider" 
-                                Maximum="6" 
-                                Minimum="0" 
-                                                TickPlacement="Both"
-                                Margin="8 0 8 0" 
-                                Value="{Binding EncodingMethod}" 
-                                SmallChange="1" 
-                                LargeChange="5"
-                                DockPanel.Dock="Right"
-                                IsSnapToTickEnabled="True"
-                                TickFrequency="1"/>
-                                    </DockPanel>
-                                </StackPanel>
-
-                                <Label Style="{StaticResource WrapLabelStyle}" Content="采样算法"/>
-                                <ComboBox Margin="0 4 0 4"
-                          ItemsSource="{Binding ResamplerList}"
-                          SelectedValue="{Binding SelectedResamplerModel}">
-                                    <ComboBox.ItemTemplate>
-                                        <DataTemplate>
-                                            <TextBlock Text="{Binding Name}"/>
-                                        </DataTemplate>
-                                    </ComboBox.ItemTemplate>
-                                </ComboBox>
-
-
-                            </StackPanel>
-
-                            <StackPanel Grid.Column="3" Orientation="Vertical" Margin="8 0 8 0">
-                                <Label Style="{StaticResource WrapLabelStyle}" Content="其他参数"/>
-                                <Label Style="{StaticResource WrapLabelStyle}" 
-                       Content="并行处理数量"/>
-                                <DockPanel Margin="0 4 0 4">
-                                    <TextBox Width="40" 
-                                 HorizontalContentAlignment="Center"
-                                 DockPanel.Dock="Left"
-                                 Text="{Binding ElementName=ParallelCountSlider, Path=Value}"/>
-                                    <Slider x:Name="ParallelCountSlider" 
-                                Maximum="{Binding MaxParallelCount}" 
-                                Minimum="1" 
-                                            TickPlacement="Both"
-                                Margin="8 0 8 0" 
-                                Value="{Binding ParallelCount}" 
-                                SmallChange="1" 
-                                LargeChange="5"
-                                DockPanel.Dock="Right"
-                                IsSnapToTickEnabled="True"
-                                TickFrequency="1"/>
-                                </DockPanel>
-
-                                <Label Style="{StaticResource WrapLabelStyle}" Content="输出文件夹"/>
-                                <DockPanel>
-                                    <Button DockPanel.Dock="Right" 
-                            Margin="4 0 0 0"
-                            Padding="8 0 8 0"
-                                VerticalAlignment="Stretch"
-                            Command="{Binding SelectOutputFolderCommand}">选择文件夹</Button>
-                                    <TextBox VerticalContentAlignment="Center"
-                             Text="{Binding OutputPath}">
-                                        <i:Interaction.Triggers>
-                                            <i:EventTrigger EventName="TextChanged">
-                                                <i:InvokeCommandAction Command="{Binding ResetOuputPathErrorContentCommand}"/>
-                                            </i:EventTrigger>
-                                        </i:Interaction.Triggers>
-                                    </TextBox>
-                                </DockPanel>
-                                <Label Style="{StaticResource ErrorLabelStyle}" Content="{Binding OuputPathErrorContent}"/>
-
-                                <Label Style="{StaticResource WrapLabelStyle}" Content="输出文件名"/>
-                                <TextBox VerticalContentAlignment="Center" 
-                         Text="{Binding OutputFileNamePattern}">
-                                </TextBox>
-                                <WrapPanel>
-                                    <CheckBox VerticalContentAlignment="Center"
-                              IsChecked="{Binding IsEnableOriginFileName}">
-                                        <Label>原文件名 {name}</Label>
-                                    </CheckBox>
-                                    <CheckBox VerticalContentAlignment="Center"
-                              IsChecked="{Binding IsEnableIndex}">
-                                        <Label>序号 {index}</Label>
-                                    </CheckBox>
-                                    <CheckBox VerticalContentAlignment="Center"
-                              IsChecked="{Binding IsEnableTime}">
-                                        <Label>时间日期 {time}</Label>
-                                    </CheckBox>
-                                    <CheckBox VerticalContentAlignment="Center"
-                              IsChecked="{Binding IsEnableQuality}">
-                                        <Label>图片质量 {quality}</Label>
-                                    </CheckBox>
-                                </WrapPanel>
-
-                                <Label Style="{StaticResource WrapLabelStyle}" Content="目标文件夹已有该图片时："/>
-                                <WrapPanel>
-                                    <RadioButton VerticalContentAlignment="Center"
-                                 IsChecked="{Binding IsCheckDontCoverExist}">
-                                        <Label Style="{StaticResource WrapLabelStyle}" Content="不保存结果"/>
-                                    </RadioButton>
-                                    <RadioButton VerticalContentAlignment="Center">
-                                        <Label Style="{StaticResource WrapLabelStyle}" Content="保存并覆盖"/>
-                                    </RadioButton>
-                                </WrapPanel>
-                            </StackPanel>
+                            <!-- 输出参数2 -->
+                            <ScrollViewer VerticalScrollBarVisibility="Auto"
+                                          Grid.Column="3">
+                                <uc:OtherParametersControl DataContext="{Binding .}"
+                                               IsEnabled="{Binding IsEnableParametersPanel}"/>
+                            </ScrollViewer>
                         </Grid>
-
-
                     </Grid>
                 </Grid>
             </TabItem>

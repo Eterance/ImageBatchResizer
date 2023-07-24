@@ -20,6 +20,9 @@
                     IsEnabled="{Binding IsChecked, RelativeSource={RelativeSource AncestorType={x:Type local:SwitchableTwoParametersControl}}}"
                     VerticalAlignment="Center"
                     ToolTipService.ToolTip="重置此项为默认值"
+                           ToolTipService.ShowOnDisabled="{StaticResource DefaultValue.ToolTipService.ShowOnDisabled}"
+                           ToolTipService.InitialShowDelay="{StaticResource DefaultValue.ToolTipService.InitialShowDelay}"
+                           ToolTipService.BetweenShowDelay="{StaticResource DefaultValue.ToolTipService.BetweenShowDelay}"
                     Click="Button_Click">
                 <ui:SymbolIcon Symbol="ArrowReset24"/>
             </Button>
@@ -27,7 +30,10 @@
                            VerticalAlignment="Stretch"
                            Margin="8 0 0 0"
                            Visibility="{Binding Path=(ToolTipService.ToolTip), Converter={StaticResource EmptyStringToVisibilityConverter}, RelativeSource={RelativeSource Self}}"
-                           ToolTipService.ToolTip="{Binding ToolTipContent, RelativeSource={RelativeSource AncestorType={x:Type local:SwitchableTwoParametersControl}}}"/>
+                           ToolTipService.ToolTip="{Binding ToolTipContent, RelativeSource={RelativeSource AncestorType={x:Type local:SwitchableTwoParametersControl}}}"
+                           ToolTipService.ShowOnDisabled="{StaticResource DefaultValue.ToolTipService.ShowOnDisabled}"
+                           ToolTipService.InitialShowDelay="{StaticResource DefaultValue.ToolTipService.InitialShowDelay}"
+                           ToolTipService.BetweenShowDelay="{StaticResource DefaultValue.ToolTipService.BetweenShowDelay}"/>
         </WrapPanel>
 
         <WrapPanel IsEnabled="{Binding IsChecked, RelativeSource={RelativeSource AncestorType={x:Type local:SwitchableTwoParametersControl}}}" Margin="4 0 0 0 ">

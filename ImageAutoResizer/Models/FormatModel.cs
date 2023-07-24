@@ -2,13 +2,13 @@
 
 namespace ImageBatchResizer.Models
 {
-    public class FormatModel
+    public class FormatModel: IModel
     {
-        public string Name { get; private set; }
+        public string DisplayName { get; private set; }
         public ImageEncoder Encoder { get; set; }
         public FormatModel(string name, ImageEncoder encoder)
         {
-            Name = name;
+            DisplayName = name;
             Encoder = encoder;
         }
     }

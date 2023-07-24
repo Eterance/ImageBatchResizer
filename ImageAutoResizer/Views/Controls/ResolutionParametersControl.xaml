@@ -35,7 +35,10 @@
                            VerticalAlignment="Stretch"
                            Margin="8 0 0 0"
                            Visibility="{Binding Path=(ToolTipService.ToolTip), Converter={StaticResource EmptyStringToVisibilityConverter}, RelativeSource={RelativeSource Self}}"
-                           ToolTipService.ToolTip="当输入的图片是竖图（高大于宽）时，分辨率上下限是否自动适应。"/>
+                           ToolTipService.ToolTip="当输入的图片是竖图（高大于宽）时，分辨率上下限是否自动适应。"
+                           ToolTipService.ShowOnDisabled="{StaticResource DefaultValue.ToolTipService.ShowOnDisabled}"
+                           ToolTipService.InitialShowDelay="{StaticResource DefaultValue.ToolTipService.InitialShowDelay}"
+                           ToolTipService.BetweenShowDelay="{StaticResource DefaultValue.ToolTipService.BetweenShowDelay}"/>
         </WrapPanel>
     </StackPanel>
 </UserControl>
