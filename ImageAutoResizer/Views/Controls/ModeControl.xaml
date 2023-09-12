@@ -97,6 +97,13 @@
                             <TextBlock TextWrapping="WrapWithOverflow" Text="忽略目标大小区间限制，重新调整至分辨率下限"/>
                         </Label>
                     </RadioButton>
+                    <RadioButton VerticalContentAlignment="Center"
+                                 IsChecked="{Binding FileSizeFirst_ReduceQuality}"
+                                 IsEnabled="{Binding IsEnableReduceQuality}">
+                        <Label>
+                            <TextBlock TextWrapping="WrapWithOverflow" Text="(仅webp与jpg)每次降低5点压缩质量，直至符合"/>
+                        </Label>
+                    </RadioButton>
                 </StackPanel>
             </StackPanel>
         </StackPanel>
@@ -164,7 +171,7 @@
 
         <uc:ComboBoxControl Margin="0 24 0 0"
                             Title="适应分辨率时的缩小策略"
-                            ToolTipContent="还没想好"
+                            ToolTipContent="将分辨率限制看作是一个矩形。&#x0a;&#x0a;裁切：在原图中间裁剪出矩形大小的部分。&#x0a;&#x0a;严格小于边长限制：原图将保持宽高比，缩小至刚好能被矩形包括。&#x0a;&#x0a;稍大于边长限制（默认）：原图将保持宽高比，缩小到刚好能将矩形包入的大小。&#x0a;&#x0a;短边对齐：原图保持宽高比，最短的那条边和矩形对应的边对齐。&#x0a;&#x0a;填充：缩小至刚好能被矩形包括，矩形剩余空白部分填充黑色。&#x0a;&#x0a;拉伸：原图缩小并拉伸至矩形，不保持宽高比。"
                             ItemsSource="{Binding ResizeModeList, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"
                             SelectedValue="{Binding SelectedResizeModeModel, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"/>
     </StackPanel>

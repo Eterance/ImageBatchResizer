@@ -1,4 +1,6 @@
-﻿using ImageBatchResizer.Models;
+﻿using ImageBatchResizer.Enums;
+using ImageBatchResizer.Models;
+using ImageBatchResizer.Services;
 using ImageBatchResizer.Views;
 using Ookii.Dialogs.Wpf;
 using Prism.Commands;
@@ -12,6 +14,7 @@ using SixLabors.ImageSharp.Formats.Png;
 using SixLabors.ImageSharp.Formats.Tga;
 using SixLabors.ImageSharp.Formats.Tiff;
 using SixLabors.ImageSharp.Formats.Webp;
+using SixLabors.ImageSharp.PixelFormats;
 using SixLabors.ImageSharp.Processing;
 using System;
 using System.Collections.Generic;
@@ -21,18 +24,22 @@ using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
+using System.Windows.Documents;
 using System.Windows.Input;
 
 namespace ImageBatchResizer.ViewModels
 {
     public class CoreViewModel : ViewModelBase
     {
+        private readonly bool initReady = false;
+
+        private WindowsSettingsService windowsSettingsService = new(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "ImageBatchResizer"));
         private bool _isEnableParametersPanel = true;
         private FormatModel _selectedFormatModel;
         private ResamplerModel _selectedResamplerModel;
         private ResizeModeModel _selectedResizeModeModel;
         private bool _isEnableInputResUpperLimit = false;
-        private bool _isEnableInputResLowerLimit = true;
+        private bool _isEnableInputResLowerLimit = false;
         private bool _isInputResLimitationAdaptPortraitImage = false;
         private bool _isAcceptBmp = true;
         private bool _isAcceptJpeg = true;
@@ -53,13 +60,15 @@ namespace ImageBatchResizer.ViewModels
         private bool _fileSizeFirst_DoNothing = true;
         private bool _fileSizeFirst_Delete = false;
         private bool _fileSizeFirst_IgnoreSizeLimit = false;
+        private bool _fileSizeFirst_ReduceQuality = false;
+        private bool _isEnableReduceQuality = true;
         private bool _isEnableTargetSizeLimit = false;
         private bool _resFirst_DoNothing = true;
         private bool _resFirst_Delete = false;
         private bool _resFirst_IgnoreSizeLimit = false;
         private int _quality = 90;
         private string _outputPath = "";
-        private string _outputFileNamePattern = "{name}";
+        private string _outputFileNamePattern = "";
         private double _inputResUpperLimitWidth = 10000;
         private double _InputResUpperLimitHeight = 8000;
         private double _InputResLowerLimitWidth = 1920;
@@ -86,8 +95,8 @@ namespace ImageBatchResizer.ViewModels
         private string _OuputPathErrorContent = "";
         private string _FullConsoleContent = "";
         private string _LiteConsoleContent = "";
-        private int _SliderMinimum = 100;
-        private int _SliderMaximum = 1;
+        private int _SliderMinimum = 1;
+        private int _SliderMaximum = 100;
         private string _CompressDescrption = "有损压缩质量";
         private bool _IsEnableCompressAdjust = true;
         private bool _IsWebpLossyMode = true;
@@ -99,12 +108,15 @@ namespace ImageBatchResizer.ViewModels
         private int _EncodingMethod = 4;
         private int _ParallelCount = 1;
         private bool _IsCheckDontCoverExist = true;
+        private FlowDocument _fullConsoleContentFlowDocument = new();
+        private FlowDocument _liteConsoleContentFlowDocument = new();
 
         public bool IsEnableParametersPanel
         {
             get => _isEnableParametersPanel;
             set
             {
+                windowsSettingsService.Set("IsEnableInputResUpperLimit", value);
                 SetValue(ref _isEnableParametersPanel, value);
             }
         }
@@ -113,6 +125,7 @@ namespace ImageBatchResizer.ViewModels
             get => _IsEnableStartButton;
             set
             {
+                windowsSettingsService.Set("IsEnableStartButton", value);
                 SetValue(ref _IsEnableStartButton, value);
             }
         }
@@ -131,6 +144,7 @@ namespace ImageBatchResizer.ViewModels
             get => _isEnableInputResUpperLimit;
             set
             {
+                windowsSettingsService.Set("IsEnableInputResUpperLimit", value);
                 SetValue(ref _isEnableInputResUpperLimit, value);
             }
         }
@@ -139,6 +153,7 @@ namespace ImageBatchResizer.ViewModels
             get => _inputResUpperLimitWidth;
             set
             {
+                windowsSettingsService.Set("InputResUpperLimitWidth", value);
                 SetValue(ref _inputResUpperLimitWidth, value);
             }
         }
@@ -147,6 +162,7 @@ namespace ImageBatchResizer.ViewModels
             get => _InputResUpperLimitHeight;
             set
             {
+                windowsSettingsService.Set("InputResUpperLimitHeight", value);
                 SetValue(ref _InputResUpperLimitHeight, value);
             }
         }
@@ -156,6 +172,7 @@ namespace ImageBatchResizer.ViewModels
             get => _isEnableInputResLowerLimit;
             set
             {
+                windowsSettingsService.Set("IsEnableInputResLowerLimit", value);
                 SetValue(ref _isEnableInputResLowerLimit, value);
             }
         }
@@ -164,6 +181,7 @@ namespace ImageBatchResizer.ViewModels
             get => _InputResLowerLimitWidth;
             set
             {
+                windowsSettingsService.Set("InputResLowerLimitWidth", value);
                 SetValue(ref _InputResLowerLimitWidth, value);
             }
         }
@@ -172,6 +190,7 @@ namespace ImageBatchResizer.ViewModels
             get => _InputResLowerLimitHeight;
             set
             {
+                windowsSettingsService.Set("InputResLowerLimitHeight", value);
                 SetValue(ref _InputResLowerLimitHeight, value);
             }
         }
@@ -181,6 +200,7 @@ namespace ImageBatchResizer.ViewModels
             get => _isInputResLimitationAdaptPortraitImage;
             set
             {
+                windowsSettingsService.Set("IsInputResLimitationAdaptPortraitImage", value);
                 SetValue(ref _isInputResLimitationAdaptPortraitImage, value);
             }
         }
@@ -190,6 +210,7 @@ namespace ImageBatchResizer.ViewModels
             get => _isAcceptBmp;
             set
             {
+                windowsSettingsService.Set("IsAcceptBmp", value);
                 SetValue(ref _isAcceptBmp, value);
             }
         }
@@ -198,6 +219,7 @@ namespace ImageBatchResizer.ViewModels
             get => _isAcceptJpeg;
             set
             {
+                windowsSettingsService.Set("IsAcceptJpeg", value);
                 SetValue(ref _isAcceptJpeg, value);
             }
         }
@@ -206,6 +228,7 @@ namespace ImageBatchResizer.ViewModels
             get => _isAcceptPng;
             set
             {
+                windowsSettingsService.Set("IsAcceptPng", value);
                 SetValue(ref _isAcceptPng, value);
             }
         }
@@ -214,6 +237,7 @@ namespace ImageBatchResizer.ViewModels
             get => _isAcceptTga;
             set
             {
+                windowsSettingsService.Set("IsAcceptTga", value);
                 SetValue(ref _isAcceptTga, value);
             }
         }
@@ -222,6 +246,7 @@ namespace ImageBatchResizer.ViewModels
             get => _isAcceptTiff;
             set
             {
+                windowsSettingsService.Set("IsAcceptTiff", value);
                 SetValue(ref _isAcceptTiff, value);
             }
         }
@@ -230,6 +255,7 @@ namespace ImageBatchResizer.ViewModels
             get => _isAcceptWebP;
             set
             {
+                windowsSettingsService.Set("IsAcceptWebP", value);
                 SetValue(ref _isAcceptWebP, value);
             }
         }
@@ -240,6 +266,7 @@ namespace ImageBatchResizer.ViewModels
             get => _isFileSizeFirstMode;
             set
             {
+                windowsSettingsService.Set("IsFileSizeFirstMode", value);
                 SetValue(ref _isFileSizeFirstMode, value);
             }
         }
@@ -248,6 +275,7 @@ namespace ImageBatchResizer.ViewModels
             get => _isResFirstMode;
             set
             {
+                windowsSettingsService.Set("IsResFirstMode", value);
                 SetValue(ref _isResFirstMode, value);
             }
         }
@@ -258,6 +286,7 @@ namespace ImageBatchResizer.ViewModels
             get => _targetSizeLowerLimit;
             set
             {
+                windowsSettingsService.Set("TargetSizeLowerLimit", value);
                 SetValue(ref _targetSizeLowerLimit, value);
             }
         }
@@ -266,6 +295,7 @@ namespace ImageBatchResizer.ViewModels
             get => _targetSizeUpperLimit;
             set
             {
+                windowsSettingsService.Set("TargetSizeUpperLimit", value);
                 SetValue(ref _targetSizeUpperLimit, value);
             }
         }
@@ -274,6 +304,7 @@ namespace ImageBatchResizer.ViewModels
             get => _binarySearchTimesLimit;
             set
             {
+                windowsSettingsService.Set("BinarySearchTimesLimit", value);
                 SetValue(ref _binarySearchTimesLimit, value);
             }
         }
@@ -282,6 +313,7 @@ namespace ImageBatchResizer.ViewModels
             get => _isDeleteSmallerThanTarget;
             set
             {
+                windowsSettingsService.Set("IsDeleteSmallerThanTarget", value);
                 SetValue(ref _isDeleteSmallerThanTarget, value);
             }
         }
@@ -290,6 +322,7 @@ namespace ImageBatchResizer.ViewModels
             get => _isEnableResLowerLimit;
             set
             {
+                windowsSettingsService.Set("IsEnableResLowerLimit", value);
                 SetValue(ref _isEnableResLowerLimit, value);
             }
         }
@@ -299,6 +332,7 @@ namespace ImageBatchResizer.ViewModels
             get => _targetResolutionWidthLowerLimit;
             set
             {
+                windowsSettingsService.Set("TargetResolutionWidthLowerLimit", value);
                 SetValue(ref _targetResolutionWidthLowerLimit, value);
             }
         }
@@ -307,6 +341,7 @@ namespace ImageBatchResizer.ViewModels
             get => _targetResolutionHeightLowerLimit;
             set
             {
+                windowsSettingsService.Set("TargetResolutionHeightLowerLimit", value);
                 SetValue(ref _targetResolutionHeightLowerLimit, value);
             }
         }
@@ -315,6 +350,7 @@ namespace ImageBatchResizer.ViewModels
             get => _isOutputResLimitationAdaptPortraitImage;
             set
             {
+                windowsSettingsService.Set("IsOutputResLimitationAdaptPortraitImage", value);
                 SetValue(ref _isOutputResLimitationAdaptPortraitImage, value);
             }
         }
@@ -323,6 +359,7 @@ namespace ImageBatchResizer.ViewModels
             get => _fileSizeFirst_DoNothing;
             set
             {
+                windowsSettingsService.Set("FileSizeFirst_DoNothing", value);
                 SetValue(ref _fileSizeFirst_DoNothing, value);
             }
         }
@@ -331,6 +368,7 @@ namespace ImageBatchResizer.ViewModels
             get => _fileSizeFirst_Delete;
             set
             {
+                windowsSettingsService.Set("FileSizeFirst_Delete", value);
                 SetValue(ref _fileSizeFirst_Delete, value);
             }
         }
@@ -339,7 +377,26 @@ namespace ImageBatchResizer.ViewModels
             get => _fileSizeFirst_IgnoreSizeLimit;
             set
             {
+                windowsSettingsService.Set("FileSizeFirst_IgnoreSizeLimit", value);
                 SetValue(ref _fileSizeFirst_IgnoreSizeLimit, value);
+            }
+        }
+        public bool FileSizeFirst_ReduceQuality
+        {
+            get => _fileSizeFirst_ReduceQuality;
+            set
+            {
+                windowsSettingsService.Set("FileSizeFirst_ReduceQuality", value);
+                SetValue(ref _fileSizeFirst_ReduceQuality, value);
+            }
+        }
+        public bool IsEnableReduceQuality
+        {
+            get => _isEnableReduceQuality;
+            set
+            {
+                windowsSettingsService.Set("IsEnableReduceQuality", value);
+                SetValue(ref _isEnableReduceQuality, value);
             }
         }
         public bool IsEnableTargetSizeLimit
@@ -347,6 +404,7 @@ namespace ImageBatchResizer.ViewModels
             get => _isEnableTargetSizeLimit;
             set
             {
+                windowsSettingsService.Set("IsEnableTargetSizeLimit", value);
                 SetValue(ref _isEnableTargetSizeLimit, value);
             }
         }
@@ -355,6 +413,7 @@ namespace ImageBatchResizer.ViewModels
             get => _resFirst_DoNothing;
             set
             {
+                windowsSettingsService.Set("ResFirst_DoNothing", value);
                 SetValue(ref _resFirst_DoNothing, value);
             }
         }
@@ -363,6 +422,7 @@ namespace ImageBatchResizer.ViewModels
             get => _resFirst_Delete;
             set
             {
+                windowsSettingsService.Set("ResFirst_Delete", value);
                 SetValue(ref _resFirst_Delete, value);
             }
         }
@@ -371,6 +431,7 @@ namespace ImageBatchResizer.ViewModels
             get => _resFirst_IgnoreSizeLimit;
             set
             {
+                windowsSettingsService.Set("ResFirst_IgnoreSizeLimit", value);
                 SetValue(ref _resFirst_IgnoreSizeLimit, value);
             }
         }
@@ -382,6 +443,7 @@ namespace ImageBatchResizer.ViewModels
             get => _quality;
             set
             {
+                windowsSettingsService.Set("Quality", value);
                 SetValue(ref _quality, value);
             }
         }
@@ -390,6 +452,7 @@ namespace ImageBatchResizer.ViewModels
             get => _IsEnableCompressAdjust;
             set
             {
+                windowsSettingsService.Set("IsEnableCompressAdjust", value);
                 SetValue(ref _IsEnableCompressAdjust, value);
             }
         }
@@ -398,6 +461,7 @@ namespace ImageBatchResizer.ViewModels
             get => _IsWebpEncoder;
             set
             {
+                windowsSettingsService.Set("IsWebpEncoder", value);
                 SetValue(ref _IsWebpEncoder, value);
                 if (value == true)
                 {
@@ -414,6 +478,7 @@ namespace ImageBatchResizer.ViewModels
             get => _EncodingMethod;
             set
             {
+                windowsSettingsService.Set("EncodingMethod", value);
                 SetValue(ref _EncodingMethod, value);
             }
         }
@@ -422,6 +487,7 @@ namespace ImageBatchResizer.ViewModels
             get => _IsWebpLossyMode;
             set
             {
+                windowsSettingsService.Set("IsWebpLossyMode", value);
                 SetValue(ref _IsWebpLossyMode, value);
                 if (IsWebpLossyMode)
                 {
@@ -438,6 +504,7 @@ namespace ImageBatchResizer.ViewModels
             get => !_IsWebpLossyMode;
             set
             {
+                windowsSettingsService.Set("IsNotWebpLossyMode", value);
                 SetValue(ref _IsWebpLossyMode, !value);
             }
         }
@@ -446,6 +513,7 @@ namespace ImageBatchResizer.ViewModels
             get => _SliderMinimum;
             set
             {
+                windowsSettingsService.Set("SliderMinimum", value);
                 SetValue(ref _SliderMinimum, value);
             }
         }
@@ -454,6 +522,7 @@ namespace ImageBatchResizer.ViewModels
             get => _SliderMaximum;
             set
             {
+                windowsSettingsService.Set("SliderMaximum", value);
                 SetValue(ref _SliderMaximum, value);
             }
         }
@@ -471,6 +540,7 @@ namespace ImageBatchResizer.ViewModels
             get => _IsEnableWebpUniqueArgs;
             set
             {
+                windowsSettingsService.Set("IsEnableWebpUniqueArgs", value);
                 SetValue(ref _IsEnableWebpUniqueArgs, value);
             }
         }
@@ -494,6 +564,7 @@ namespace ImageBatchResizer.ViewModels
             get => _IsCheckDontCoverExist;
             set
             {
+                windowsSettingsService.Set("IsCheckDontCoverExist", value);
                 SetValue(ref _IsCheckDontCoverExist, value);
             }
         }
@@ -502,6 +573,7 @@ namespace ImageBatchResizer.ViewModels
             get => !_IsCheckDontCoverExist;
             set
             {
+                windowsSettingsService.Set("IsCheckCoverExist", value);
                 SetValue(ref _IsCheckDontCoverExist, !value);
             }
         }
@@ -521,6 +593,19 @@ namespace ImageBatchResizer.ViewModels
                 else 
                 {
                     IsWebpEncoder = false;
+                }
+                if (value.DisplayName == ".jpg" || value.DisplayName == ".webp")
+                {
+                    IsEnableReduceQuality = true;
+                }
+                else 
+                {
+                    IsEnableReduceQuality = false;
+                    if (FileSizeFirst_ReduceQuality)
+                    {
+                        FileSizeFirst_ReduceQuality = false;
+                        FileSizeFirst_DoNothing = true;
+                    }
                 }
                 // 根据编码器的不同，改变压缩的描述
                 if (value.DisplayName == ".jpg" || (value.DisplayName == ".webp" && IsWebpLossyMode))
@@ -619,13 +704,71 @@ namespace ImageBatchResizer.ViewModels
         {
             ResizeModeList = new ObservableCollection<ResizeModeModel>
             {
-                new("Crop", SixLabors.ImageSharp.Processing.ResizeMode.Crop),
-                new("Max", SixLabors.ImageSharp.Processing.ResizeMode.Max),
+                new("裁切", SixLabors.ImageSharp.Processing.ResizeMode.Crop),
+                new("严格小于边长限制", SixLabors.ImageSharp.Processing.ResizeMode.Max),
             };
-            SelectedResizeModeModel = new("Min", SixLabors.ImageSharp.Processing.ResizeMode.Min);
+            SelectedResizeModeModel = new("稍大于边长限制", SixLabors.ImageSharp.Processing.ResizeMode.Manual);
             ResizeModeList.Add(SelectedResizeModeModel);
-            ResizeModeList.Add(new("Pad", SixLabors.ImageSharp.Processing.ResizeMode.Pad));
-            ResizeModeList.Add(new("Stretch", SixLabors.ImageSharp.Processing.ResizeMode.Stretch));
+            ResizeModeList.Add(new("短边对齐", SixLabors.ImageSharp.Processing.ResizeMode.Min));
+            ResizeModeList.Add(new("填充", SixLabors.ImageSharp.Processing.ResizeMode.Pad));
+            ResizeModeList.Add(new("拉伸", SixLabors.ImageSharp.Processing.ResizeMode.Stretch));
+        }
+
+        private void InitParameters()
+        {
+            IsEnableInputResUpperLimit = windowsSettingsService.Get("IsEnableInputResUpperLimit", false);
+            InputResUpperLimitWidth = windowsSettingsService.Get("InputResUpperLimitWidth", 10000.0);
+            InputResUpperLimitHeight = windowsSettingsService.Get("InputResUpperLimitHeight", 8000.0);
+            IsEnableInputResLowerLimit = windowsSettingsService.Get("IsEnableInputResLowerLimit", false);
+            InputResLowerLimitWidth = windowsSettingsService.Get("InputResLowerLimitWidth", 1920.0);
+            InputResLowerLimitHeight = windowsSettingsService.Get("InputResLowerLimitHeight", 1200.0);
+            IsInputResLimitationAdaptPortraitImage = windowsSettingsService.Get("IsInputResLimitationAdaptPortraitImage", false);
+            IsAcceptBmp = windowsSettingsService.Get("IsAcceptBmp", true);
+            IsAcceptJpeg = windowsSettingsService.Get("IsAcceptJpeg", true);
+            IsAcceptPng = windowsSettingsService.Get("IsAcceptPng", true);
+            IsAcceptTga = windowsSettingsService.Get("IsAcceptTga", true);
+            IsAcceptTiff = windowsSettingsService.Get("IsAcceptTiff", true);
+            IsAcceptWebP = windowsSettingsService.Get("IsAcceptWebP", true);
+
+            IsFileSizeFirstMode = windowsSettingsService.Get("IsFileSizeFirstMode", true);
+            IsResFirstMode = windowsSettingsService.Get("IsResFirstMode", false);
+            TargetSizeLowerLimit = windowsSettingsService.Get("TargetSizeLowerLimit", 300.0);
+            TargetSizeUpperLimit = windowsSettingsService.Get("TargetSizeUpperLimit", 350.0);
+            BinarySearchTimesLimit = windowsSettingsService.Get("BinarySearchTimesLimit", 20.0);
+            IsDeleteSmallerThanTarget = windowsSettingsService.Get("IsDeleteSmallerThanTarget", false);
+            IsEnableResLowerLimit = windowsSettingsService.Get("IsEnableResLowerLimit", false);
+            TargetResolutionWidthLowerLimit = windowsSettingsService.Get("TargetResolutionWidthLowerLimit", 1920.0);
+            TargetResolutionHeightLowerLimit = windowsSettingsService.Get("TargetResolutionHeightLowerLimit", 1200.0);
+            IsOutputResLimitationAdaptPortraitImage = windowsSettingsService.Get("IsOutputResLimitationAdaptPortraitImage", false);
+            FileSizeFirst_DoNothing = windowsSettingsService.Get("FileSizeFirst_DoNothing", true);
+            FileSizeFirst_Delete = windowsSettingsService.Get("FileSizeFirst_Delete", false);
+            FileSizeFirst_IgnoreSizeLimit = windowsSettingsService.Get("FileSizeFirst_IgnoreSizeLimit", false);
+            FileSizeFirst_ReduceQuality = windowsSettingsService.Get("FileSizeFirst_ReduceQuality", false);
+            IsEnableReduceQuality = windowsSettingsService.Get("IsEnableReduceQuality", false);
+            IsEnableTargetSizeLimit = windowsSettingsService.Get("IsEnableTargetSizeLimit", false);
+            ResFirst_DoNothing = windowsSettingsService.Get("ResFirst_DoNothing", true);
+            ResFirst_Delete = windowsSettingsService.Get("ResFirst_Delete", false);
+            ResFirst_IgnoreSizeLimit = windowsSettingsService.Get("ResFirst_IgnoreSizeLimit", false);
+
+            Quality = windowsSettingsService.Get("Quality", 90);
+            IsEnableCompressAdjust = windowsSettingsService.Get("IsEnableCompressAdjust", true);
+            IsWebpEncoder = windowsSettingsService.Get("IsWebpEncoder", true);
+            EncodingMethod = windowsSettingsService.Get("EncodingMethod", 4);
+            IsWebpLossyMode = windowsSettingsService.Get("IsWebpLossyMode", true);
+            IsNotWebpLossyMode = windowsSettingsService.Get("IsNotWebpLossyMode", false);
+            SliderMinimum = windowsSettingsService.Get("SliderMinimum", 1);
+            SliderMaximum = windowsSettingsService.Get("SliderMaximum", 100);
+            IsEnableWebpUniqueArgs = windowsSettingsService.Get("IsEnableWebpUniqueArgs", false);
+            ParallelCount = windowsSettingsService.Get("ParallelCount", 1);
+            IsCheckDontCoverExist = windowsSettingsService.Get("IsCheckDontCoverExist", true);
+            IsCheckCoverExist = windowsSettingsService.Get("IsCheckCoverExist", false);
+
+            OutputPath = windowsSettingsService.Get("OutputPath", "");
+            OutputFileNamePattern = windowsSettingsService.Get("OutputFileNamePattern", "{name}");
+            IsEnableOriginFileName = windowsSettingsService.Get("IsEnableOriginFileName", true);
+            IsEnableIndex = windowsSettingsService.Get("IsEnableIndex", false);
+            IsEnableTime = windowsSettingsService.Get("IsEnableTime", false);
+            IsEnableQuality = windowsSettingsService.Get("IsEnableQuality", false);
         }
 
         public string OutputPath
@@ -633,15 +776,18 @@ namespace ImageBatchResizer.ViewModels
             get => _outputPath;
             set
             {
+                windowsSettingsService.Set("OutputPath", value);
                 SetValue(ref _outputPath, value);
             }
         }
         public ICommand SelectOutputFolderCommand { get; private set; }
+
         public string OutputFileNamePattern
         {
             get => _outputFileNamePattern;
             set
             {
+                windowsSettingsService.Set("OutputFileNamePattern", value);
                 SetValue(ref _outputFileNamePattern, value);
             }
         }
@@ -655,10 +801,16 @@ namespace ImageBatchResizer.ViewModels
         }
         private void ProcessOutputFileNamePattern(bool value, string PlaceHolder)
         {
+            // 如果还没初始化完成就不处理
+            // 因为初始化的时候会先读取pattern再读取多选框状态
+            // 读取多选框状态会触发修改 pattern
+            if (!initReady) { return; }
+            // 增加
             if (value)
             {
                 OutputFileNamePattern = @$"{OutputFileNamePattern}{GetDash()}{PlaceHolder}";
             }
+            // 减少
             else
             {
                 OutputFileNamePattern = OutputFileNamePattern.Replace(@$"-{PlaceHolder}", "");
@@ -672,6 +824,7 @@ namespace ImageBatchResizer.ViewModels
             get => _isEnableOriginFileName;
             set
             {
+                windowsSettingsService.Set("IsEnableOriginFileName", value);
                 ProcessOutputFileNamePattern(value, "{name}");
                 SetValue(ref _isEnableOriginFileName, value);
             }
@@ -681,6 +834,7 @@ namespace ImageBatchResizer.ViewModels
             get => _isEnableIndex;
             set
             {
+                windowsSettingsService.Set("IsEnableIndex", value);
                 ProcessOutputFileNamePattern(value, "{index}");
                 SetValue(ref _isEnableIndex, value);
             }
@@ -690,6 +844,7 @@ namespace ImageBatchResizer.ViewModels
             get => _isEnableTime;
             set
             {
+                windowsSettingsService.Set("IsEnableTime", value);
                 ProcessOutputFileNamePattern(value, "{time}");
                 SetValue(ref _isEnableTime, value);
             }
@@ -699,6 +854,7 @@ namespace ImageBatchResizer.ViewModels
             get => _isEnableQuality;
             set
             {
+                windowsSettingsService.Set("IsEnableQuality", value);
                 ProcessOutputFileNamePattern(value, "{quality}");
                 SetValue(ref _isEnableQuality, value);
             }
@@ -717,6 +873,23 @@ namespace ImageBatchResizer.ViewModels
         }
 
         #endregion
+
+        public FlowDocument FullConsoleFlowDocument
+        {
+            get => _fullConsoleContentFlowDocument;
+            private set
+            {
+                SetValue(ref _fullConsoleContentFlowDocument, value);
+            }
+        }
+        public FlowDocument LiteConsoleFlowDocument
+        {
+            get => _liteConsoleContentFlowDocument;
+            private set
+            {
+                SetValue(ref _liteConsoleContentFlowDocument, value);
+            }
+        }
 
         public string FullConsoleContent
         {
@@ -751,6 +924,18 @@ namespace ImageBatchResizer.ViewModels
             lock (LiteConsoleContent)
             {
                 LiteConsoleContent = $"{LiteConsoleContent}\n\n{DateTime.Now} {message}";
+            }
+        }
+
+        private void Append2FullConsoleDocument(string message, ConsoleMessageTypeEnum type,  bool liteAlso = false)
+        {
+            lock (FullConsoleFlowDocument)
+            {
+                FullConsoleContent = $"{FullConsoleContent}\n\n{DateTime.Now} {message}";
+            }
+            if (liteAlso)
+            {
+                Append2LiteConsole(message);
             }
         }
 
@@ -795,6 +980,7 @@ namespace ImageBatchResizer.ViewModels
 
         public ObservableCollection<FileModel> InputFileList { get; set; } = new();
         public DelegateCommand AppendFilesCommand { get; private set; }
+        public DelegateCommand RevertSelectedCommand { get; }
         public DelegateCommand DeleteChosenCommand { get; }
         public DelegateCommand DeleteAllCommand { get; }
         public DelegateCommand ResetAllCommand { get; }
@@ -827,6 +1013,7 @@ namespace ImageBatchResizer.ViewModels
             InitFormatList();
             InitResamplerList();
             InitResizeModeList();
+            InitParameters();
             SelectOutputFolderCommand = new DelegateCommand(() => 
             {
                 var dlg = new VistaFolderBrowserDialog();
@@ -848,9 +1035,16 @@ namespace ImageBatchResizer.ViewModels
                     HandleAppendFiles(dialog.FileNames);
                 }
             });
-            DeleteChosenCommand = new DelegateCommand(() => 
+            RevertSelectedCommand = new DelegateCommand(() =>
             {
                 for (int i = 0; i < InputFileList.Count; i++)
+                {
+                    InputFileList[i].Chosen = !InputFileList[i].Chosen;
+                }
+            });
+            DeleteChosenCommand = new DelegateCommand(() => 
+            {
+                for (int i = InputFileList.Count - 1; i >= 0; i--)
                 {
                     if (InputFileList[i].Chosen == true)
                     {
@@ -884,6 +1078,7 @@ namespace ImageBatchResizer.ViewModels
             });
             ResetOuputPathErrorContentCommand = new DelegateCommand(() => OuputPathErrorContent = "");
 
+            initReady = true;
             Append2FullConsole("初始化完毕");
         }
 
@@ -963,7 +1158,7 @@ namespace ImageBatchResizer.ViewModels
             if (IsAcceptTiff) list.Add(".tif"); list.Add(".tiff");
             if (IsAcceptWebP) list.Add(".webp");
             // 设置编码器参数
-            SetupSelectedEncoder();
+            SelectedFormatModel.Encoder = SetupEncoder(Quality);
 
             SemaphoreSlim semaphore = new SemaphoreSlim(ParallelCount);
             List<Task<(bool, bool, long)>> tasks = new();
@@ -1023,22 +1218,23 @@ namespace ImageBatchResizer.ViewModels
         /// 
         /// </summary>
         /// <param name="list"></param>
-        /// <param name="item"></param>
+        /// <param name="fileItem"></param>
         /// <param name="token"></param>
         /// <returns></returns>
         /// <exception cref="OperationCanceledException"></exception>
-        private async Task<(bool, bool, long)> SingleProcessAsync(List<string> list, FileModel item, CancellationToken token = default)
+        private async Task<(bool, bool, long)> SingleProcessAsync(List<string> list, FileModel fileItem, CancellationToken token = default)
         {
+            var current_quality = Quality;
             long disk_cost = 0;
-            var originalExt = Path.GetExtension(item.DisplayName);
+            var originalExt = Path.GetExtension(fileItem.DisplayName);
             if (originalExt != null && list.Contains(originalExt) == false)
             {
-                Append2FullConsole($"{item.DisplayName} 扩展名不在允许读取的格式中，跳过");
-                item.Processed = true;
+                Append2FullConsole($"{fileItem.DisplayName} 扩展名不在允许读取的格式中，跳过");
+                fileItem.Processed = true;
                 ProcessedCount++;
                 return (true, false, disk_cost);
             }
-            var imageInfo = await Image.IdentifyAsync(item.Path);
+            var imageInfo = await Image.IdentifyAsync(fileItem.Path);
             var originWidth = imageInfo.Width;
             var originHeigth = imageInfo.Height;
             // 限制适应竖图
@@ -1056,148 +1252,217 @@ namespace ImageBatchResizer.ViewModels
             // 跳过不在分辨率限制内的
             if (IsEnableInputResUpperLimit && (originWidth > inputResUpperLimitWidth || originHeigth > inputResUpperLimitHeight))
             {
-                Append2FullConsole($"{item} 大小（{originWidth} × {originHeigth}）超出上限，跳过");
-                item.Processed = true;
+                Append2FullConsole($"{fileItem} 大小（{originWidth} × {originHeigth}）超出上限，跳过");
+                fileItem.Processed = true;
                 ProcessedCount++;
                 return (true, false, disk_cost);
             }
             if (IsEnableInputResLowerLimit && (originWidth < inputResLowerLimitWidth || originHeigth < inputResLowerLimitHeight))
             {
-                Append2FullConsole($"{item} 大小（{originWidth} × {originHeigth}）低于下限，跳过");
-                item.Processed = true;
+                Append2FullConsole($"{fileItem} 大小（{originWidth} × {originHeigth}）低于下限，跳过");
+                fileItem.Processed = true;
                 ProcessedCount++;
                 return (true, false, disk_cost);
             }
             var start_time = DateTime.Now;
             var temp_filename = Path.Combine(OutputPath, $"temp{SelectedFormatModel.DisplayName}");
+            var final_filename = Path.Combine(OutputPath, $"{RenameResult(Path.GetFileNameWithoutExtension(fileItem.DisplayName), current_quality)}{SelectedFormatModel.DisplayName}");
 
-            using (Image originImage = await Image.LoadAsync(item.Path))
+            var existence = File.Exists(final_filename);
+            if (existence && IsCheckDontCoverExist)
             {
-                Append2FullConsole($"{item.DisplayName} 开始处理");
+                fileItem.ResizedPath = $"文件已存在：{final_filename}";
+                Append2FullConsole($"{final_filename} 已存在未覆盖，跳过处理", true);
+                ProcessedCount++;
+                fileItem.Processed = true;
+                return (true, false, disk_cost);
+            }
+
+            using (Image originImage = await Image.LoadAsync(fileItem.Path))
+            {
+                Append2FullConsole($"{fileItem.DisplayName} 开始处理");
                 using (MemoryStream memoryStream = new MemoryStream())
                 {
                     if (IsFileSizeFirstMode)
                     {
-                        // 先尝试原尺寸压缩，如果满足要求就不用缩小了
-                        if (token.IsCancellationRequested) throw new OperationCanceledException(token);
-                        var st1 = DateTime.Now;
-                        await originImage.SaveAsync(memoryStream, SelectedFormatModel.Encoder, token);
-                        Append2FullConsole($"SaveAsync 耗时 {(DateTime.Now - st1).TotalSeconds} 秒");
-
-                        long fileSizeInBytes = memoryStream.Length;
-                        //disk_cost += fileSizeInBytes;
-                        //total_disk_cost += disk_cost;
-                        Append2FullConsole($"{item.DisplayName} 分辨率未改变 ({originWidth}×{originHeigth})，直接保存的大小：{Math.Round((double)fileSizeInBytes / 1024, 3)} KiB");
-                        if (fileSizeInBytes < TargetSizeUpperLimit * 1024)
+                        try
                         {
-                            item.Processed = true;
-                            if (fileSizeInBytes < TargetSizeLowerLimit * 1024 && IsDeleteSmallerThanTarget)
+
+                            // 先尝试原尺寸压缩，如果满足要求就不用缩小了
+                            if (token.IsCancellationRequested) throw new OperationCanceledException(token);
+                            var st1 = DateTime.Now;
+                            await originImage.SaveAsync(memoryStream, SelectedFormatModel.Encoder, token);
+                            Append2FullConsole($"SaveAsync 耗时 {(DateTime.Now - st1).TotalSeconds} 秒");
+
+                            long fileSizeInBytes = memoryStream.Length;
+                            //disk_cost += fileSizeInBytes;
+                            //total_disk_cost += disk_cost;
+                            Append2FullConsole($"{fileItem.DisplayName} 分辨率未改变 ({originWidth}×{originHeigth})，直接保存的大小：{Math.Round((double)fileSizeInBytes / 1024, 3)} KiB");
+                            // 直接转换的文件大小小于下限
+                            if (fileSizeInBytes < TargetSizeUpperLimit * 1024)
                             {
-                                //File.Delete(temp_filename);
-                                Append2FullConsole($"{item.DisplayName} 直接转换的结果被删除，因为小于文件大小区间。耗时：{(DateTime.Now - start_time).TotalSeconds} 秒，磁盘写入 {Math.Round((double)disk_cost / 1024, 3)} KiB");
-                                item.Processed = true;
-                                ProcessedCount++;
-                                return (true, false, disk_cost);
+                                fileItem.Processed = true;
+                                if (fileSizeInBytes < TargetSizeLowerLimit * 1024 && IsDeleteSmallerThanTarget)
+                                {
+                                    //File.Delete(temp_filename);
+                                    Append2FullConsole($"{fileItem.DisplayName} 直接转换的结果被删除，因为小于文件大小区间。耗时：{(DateTime.Now - start_time).TotalSeconds} 秒，磁盘写入 {Math.Round((double)disk_cost / 1024, 3)} KiB");
+                                    fileItem.Processed = true;
+                                    ProcessedCount++;
+                                    return (true, false, disk_cost);
+                                }
+                                else
+                                {
+                                    final_filename = Path.Combine(OutputPath, $"{RenameResult(Path.GetFileNameWithoutExtension(fileItem.DisplayName), current_quality)}{SelectedFormatModel.DisplayName}");
+                                    existence = File.Exists(final_filename);
+                                    if (File.Exists(final_filename) && IsCheckDontCoverExist)
+                                    {
+                                        fileItem.ResizedPath = $"文件已存在：{final_filename}";
+                                        Append2FullConsole($"{final_filename} 已存在未覆盖，耗时：{(DateTime.Now - start_time).TotalSeconds} 秒，磁盘写入 {Math.Round((double)disk_cost / 1024, 3)} KiB", true);
+                                        ProcessedCount++;
+                                        return (false, false, disk_cost);
+                                    }
+                                    else
+                                    {
+                                        await File.WriteAllBytesAsync(final_filename, memoryStream.ToArray(), token);
+                                        disk_cost += memoryStream.Length;
+                                        fileItem.ResizedPath = final_filename;
+                                        Append2FullConsole($"{fileItem.DisplayName} 的结果已{(existence ? "覆盖" : "保存")}至 {final_filename}，耗时：{(DateTime.Now - start_time).TotalSeconds} 秒，磁盘写入 {Math.Round((double)disk_cost / 1024, 3)} KiB", true);
+                                        fileItem.Processed = true;
+                                        ProcessedCount++;
+                                        return (true, true, disk_cost);
+                                    }
+                                }
                             }
                             else
                             {
-                                var final_filename = Path.Combine(OutputPath, $"{RenameResult(Path.GetFileNameWithoutExtension(item.DisplayName))}{SelectedFormatModel.DisplayName}");
-                                var existence = File.Exists(final_filename);
+                                var temp_encoder = SelectedFormatModel.Encoder;
+                                int resized_width, resized_height = 0;
+                                string width_percentage, height_percentage, pixel_percentage = "";
+                                // 循环减小质量
+                                while (true)
+                                {
+                                    (resized_width, resized_height, _) = await BinarySearchShrink(fileItem.DisplayName, originImage, temp_encoder, memoryStream, token);
+                                    // 重新读取一下实际处理后的边长
+                                    memoryStream.Position = 0;
+                                    imageInfo = await Image.IdentifyAsync(memoryStream);
+                                    resized_width = imageInfo.Width;
+                                    resized_height = imageInfo.Height;
+                                    fileSizeInBytes = memoryStream.Length;
+                                    width_percentage = ((resized_width / (double)originImage.Width) * 100).ToString("f2");
+                                    height_percentage = ((resized_height / (double)originImage.Height) * 100).ToString("f2");
+                                    pixel_percentage = ((resized_width * resized_height) / (double)(originImage.Width * originImage.Height) * 100).ToString("f2");
+
+
+                                    if (!IsEnableResLowerLimit)
+                                    {
+                                        break;
+                                    }
+                                    else
+                                    {
+                                        // 开启了分辨率最低限制
+                                        (bool isUnder, int true_width_limit, int true_height_limit) = IsUnderResolutionLimit(resized_width, resized_height);
+                                        if (isUnder)
+                                        {
+                                            if (FileSizeFirst_Delete)
+                                            {
+                                                //File.Delete(temp_filename);
+                                                Append2FullConsole($"{fileItem.DisplayName} 转换的结果被删除，{resized_width}×{resized_height}, {width_percentage}% 宽 {height_percentage}% 高, {pixel_percentage}% 像素, 耗时：{(DateTime.Now - start_time).TotalSeconds} 秒，磁盘写入 {Math.Round((double)disk_cost / 1024, 3)} KiB");
+                                                fileItem.Processed = true;
+                                                ProcessedCount++;
+                                                return (true, false, disk_cost);
+                                            }
+                                            else if (FileSizeFirst_IgnoreSizeLimit)
+                                            {
+                                                Image? image_processed = default;
+                                                // 手动表示要自己计算分辨率
+                                                if (SelectedResizeModeModel.Mode == SixLabors.ImageSharp.Processing.ResizeMode.Manual)
+                                                {
+                                                    // 选取较大的缩放比例
+                                                    // 如果宽的缩放比例更大，也就是说宽距离限制更远，也就是宽相对更小
+                                                    // 那么就以宽对齐，高传入0
+                                                    double width_scale_factor = true_width_limit / (double)resized_width;
+                                                    double height_scale_factor = true_height_limit / (double)resized_height;
+                                                    if (width_scale_factor > height_scale_factor)
+                                                    {
+                                                        true_height_limit = 0;
+                                                    }
+                                                    else
+                                                    {
+                                                        true_width_limit = 0;
+                                                    }
+                                                    image_processed = ProcessingExtensions.Clone(originImage, x => x.Resize(
+                                                        true_width_limit,
+                                                        true_height_limit,
+                                                        SelectedResamplerModel.Resampler
+                                                        ));
+                                                }
+                                                else
+                                                {
+                                                    image_processed = ProcessingExtensions.Clone(originImage, x => x.Resize(new ResizeOptions()
+                                                    {
+                                                        Size = new SixLabors.ImageSharp.Size(true_width_limit, true_height_limit),
+                                                        Mode = SelectedResizeModeModel.Mode,
+                                                        Sampler = SelectedResamplerModel.Resampler,
+                                                    }));
+                                                }
+                                                memoryStream.SetLength(0);
+                                                if (token.IsCancellationRequested) throw new OperationCanceledException(token);
+                                                st1 = DateTime.Now;
+                                                await image_processed.SaveAsync(memoryStream, SelectedFormatModel.Encoder, token);
+                                                // 重新读取一下实际处理后的边长
+                                                memoryStream.Position = 0;
+                                                imageInfo = await Image.IdentifyAsync(memoryStream);
+                                                resized_width = imageInfo.Width;
+                                                resized_height = imageInfo.Height;
+                                                fileSizeInBytes = memoryStream.Length;
+                                                width_percentage = ((resized_width / (double)originImage.Width) * 100).ToString("f2");
+                                                height_percentage = ((resized_height / (double)originImage.Height) * 100).ToString("f2");
+                                                pixel_percentage = ((resized_width * resized_height) / (double)(originImage.Width * originImage.Height) * 100).ToString("f2");
+                                                Append2FullConsole($"SaveAsync 耗时 {(DateTime.Now - st1).TotalSeconds} 秒");
+
+                                                Append2FullConsole($"{fileItem.DisplayName} 的分辨率重新设置为 {resized_width}×{resized_height}, {width_percentage}% 宽 {height_percentage}% 高, {pixel_percentage}% 像素, {Math.Round((double)fileSizeInBytes / 1024, 3)} KiB");
+                                                //disk_cost += file_size;
+                                                //total_disk_cost += fileSizeInBytes;
+                                            }
+                                            else if (FileSizeFirst_ReduceQuality)
+                                            {
+                                                current_quality -= 5;
+                                                temp_encoder = SetupEncoder(current_quality);
+                                                continue;
+                                            }
+                                            // 不做处理
+                                        }
+                                        break;
+                                    }
+                                }
+                                final_filename = Path.Combine(OutputPath, $"{RenameResult(Path.GetFileNameWithoutExtension(fileItem.DisplayName), current_quality)}{SelectedFormatModel.DisplayName}");
+                                existence = File.Exists(final_filename);
                                 if (File.Exists(final_filename) && IsCheckDontCoverExist)
                                 {
-                                    item.ResizedPath = $"文件已存在：{final_filename}";
-                                    Append2FullConsole($"{final_filename} 已存在未覆盖，耗时：{(DateTime.Now - start_time).TotalSeconds} 秒，磁盘写入 {Math.Round((double)disk_cost / 1024, 3)} KiB", true);
+                                    fileItem.ResizedPath = $"文件已存在：{final_filename}";
+                                    Append2FullConsole($"{final_filename} 已存在未覆盖，{resized_width}×{resized_height}, {width_percentage}% 宽 {height_percentage}% 高, {pixel_percentage}% 像素, 耗时：{(DateTime.Now - start_time).TotalSeconds} 秒，磁盘写入 {Math.Round((double)disk_cost / 1024, 3)} KiB", true);
                                     ProcessedCount++;
                                     return (false, false, disk_cost);
                                 }
                                 else
                                 {
+                                    // 未开启分辨率最低限制
                                     await File.WriteAllBytesAsync(final_filename, memoryStream.ToArray(), token);
+                                    if (token.IsCancellationRequested) throw new OperationCanceledException(token);
                                     disk_cost += memoryStream.Length;
-                                    item.ResizedPath = final_filename;
-                                    Append2FullConsole($"{item.DisplayName} 的结果已{(existence?"覆盖":"保存")}至 {final_filename}，耗时：{(DateTime.Now - start_time).TotalSeconds} 秒，磁盘写入 {Math.Round((double)disk_cost / 1024, 3)} KiB", true);
-                                    item.Processed = true;
+                                    fileItem.ResizedPath = final_filename;
+                                    Append2FullConsole($"{fileItem.DisplayName} 转换的结果已{(existence ? "覆盖" : "保存")}至 {final_filename}，{resized_width}×{resized_height}, {width_percentage}% 宽 {height_percentage}% 高, {pixel_percentage}% 像素, 耗时：{(DateTime.Now - start_time).TotalSeconds} 秒，磁盘写入 {Math.Round((double)disk_cost / 1024, 3)} KiB", true);
+                                    fileItem.Processed = true;
                                     ProcessedCount++;
                                     return (true, true, disk_cost);
-                                }
+                                }                                
                             }
                         }
-                        else
+                        catch (Exception e)
                         {
-                            (int resized_width, int resized_height, _) = await BinarySearchShrink(item.DisplayName, originImage, SelectedFormatModel.Encoder, memoryStream, token);
-                            // 重新读取一下实际处理后的边长
-                            memoryStream.Position = 0;
-                            imageInfo = await Image.IdentifyAsync(memoryStream);
-                            resized_width = imageInfo.Width;
-                            resized_height = imageInfo.Height;
-                            fileSizeInBytes = memoryStream.Length;
-                            var width_percentage = ((resized_width / (double)originImage.Width) * 100).ToString("f2");
-                            var height_percentage = ((resized_height / (double)originImage.Height) * 100).ToString("f2");
-                            var pixel_percentage = ((resized_width * resized_height) / (double)(originImage.Width * originImage.Height) * 100).ToString("f2");
+                            Append2FullConsole($"发生错误：{e}");
+                            return (false, false, 0);
 
-                            if (IsEnableResLowerLimit)
-                            {
-                                (bool isUnder, int true_width_limit, int true_height_limit) = IsUnderResolutionLimit(resized_width, resized_height);
-                                if (isUnder)
-                                {
-                                    if (FileSizeFirst_Delete)
-                                    {
-                                        //File.Delete(temp_filename);
-                                        Append2FullConsole($"{item.DisplayName} 转换的结果被删除，{resized_width}×{resized_height}, {width_percentage}% 宽 {height_percentage}% 高, {pixel_percentage}% 像素, 耗时：{(DateTime.Now - start_time).TotalSeconds} 秒，磁盘写入 {Math.Round((double)disk_cost / 1024, 3)} KiB");
-                                        item.Processed = true;
-                                        ProcessedCount++;
-                                        return (true, false, disk_cost);
-                                    }
-                                    else if (FileSizeFirst_IgnoreSizeLimit)
-                                    {
-                                        Image image_processed = ProcessingExtensions.Clone(originImage, x => x.Resize(new ResizeOptions()
-                                        {
-                                            Size = new SixLabors.ImageSharp.Size(true_width_limit, true_height_limit),
-                                            Mode = SelectedResizeModeModel.Mode,
-                                            Sampler = SelectedResamplerModel.Resampler,
-                                        }));
-                                        memoryStream.SetLength(0);
-                                        if (token.IsCancellationRequested) throw new OperationCanceledException(token);
-                                        st1 = DateTime.Now;
-                                        await image_processed.SaveAsync(memoryStream, SelectedFormatModel.Encoder, token);
-                                        // 重新读取一下实际处理后的边长
-                                        memoryStream.Position = 0;
-                                        imageInfo = await Image.IdentifyAsync(memoryStream);
-                                        resized_width = imageInfo.Width;
-                                        resized_height = imageInfo.Height;
-                                        fileSizeInBytes = memoryStream.Length;
-                                        width_percentage = ((resized_width / (double)originImage.Width) * 100).ToString("f2");
-                                        height_percentage = ((resized_height / (double)originImage.Height) * 100).ToString("f2");
-                                        pixel_percentage = ((resized_width * resized_height) / (double)(originImage.Width * originImage.Height) * 100).ToString("f2");
-                                        Append2FullConsole($"SaveAsync 耗时 {(DateTime.Now - st1).TotalSeconds} 秒");
-                                        
-                                        Append2FullConsole($"{item.DisplayName} 的分辨率重新设置为 {resized_width}×{resized_height}, {width_percentage}% 宽 {height_percentage}% 高, {pixel_percentage}% 像素, {Math.Round((double)fileSizeInBytes / 1024, 3)} KiB");
-                                        //disk_cost += file_size;
-                                        //total_disk_cost += fileSizeInBytes;
-                                    }
-                                    // 不做处理
-                                }
-                            }
-                            var final_filename = Path.Combine(OutputPath, $"{RenameResult(Path.GetFileNameWithoutExtension(item.DisplayName))}{SelectedFormatModel.DisplayName}");
-                            var existence = File.Exists(final_filename);
-                            if (File.Exists(final_filename) && IsCheckDontCoverExist)
-                            {
-                                item.ResizedPath = $"文件已存在：{final_filename}";
-                                Append2FullConsole($"{final_filename} 已存在未覆盖，{resized_width}×{resized_height}, {width_percentage}% 宽 {height_percentage}% 高, {pixel_percentage}% 像素, 耗时：{(DateTime.Now - start_time).TotalSeconds} 秒，磁盘写入 {Math.Round((double)disk_cost / 1024, 3)} KiB", true);
-                                ProcessedCount++;
-                                return (false, false, disk_cost);
-                            }
-                            else
-                            {
-                                await File.WriteAllBytesAsync(final_filename, memoryStream.ToArray(), token);
-                                if (token.IsCancellationRequested) throw new OperationCanceledException(token);
-                                disk_cost += memoryStream.Length;
-                                item.ResizedPath = final_filename;
-                                Append2FullConsole($"{item.DisplayName} 转换的结果已{(existence ? "覆盖" : "保存")}至 {final_filename}，{resized_width}×{resized_height}, {width_percentage}% 宽 {height_percentage}% 高, {pixel_percentage}% 像素, 耗时：{(DateTime.Now - start_time).TotalSeconds} 秒，磁盘写入 {Math.Round((double)disk_cost / 1024, 3)} KiB", true);
-                                item.Processed = true;
-                                ProcessedCount++;
-                                return (true, true, disk_cost);
-                            }
                         }
                     }
                     else
@@ -1240,14 +1505,38 @@ namespace ImageBatchResizer.ViewModels
                 {
                     MessageBox.Show("相同！");
                 }
+                // 转换失败：
+                // 77235172.png
+                // illust_76954860_20191002_022429.png
+                // 75323963.png
+                // 84889828.png
+                // 73960040.png
                 resized_width = (int)(originImage.Width * current_multiple);
                 resized_height = (int)(originImage.Height * current_multiple);
-                Image image_processed = ProcessingExtensions.Clone(originImage, x => x.Resize(new ResizeOptions()
+                if (resized_width <= 0 || resized_height <= 0)
+                { 
+                    throw new Exception();
+                }
+                Image image_processed;
+                if (SelectedResizeModeModel.Mode == SixLabors.ImageSharp.Processing.ResizeMode.Manual)
                 {
-                    Size = new SixLabors.ImageSharp.Size(resized_width, resized_height),
-                    Mode = SelectedResizeModeModel.Mode,
-                    Sampler = SelectedResamplerModel.Resampler,
-                }));
+                    image_processed = ProcessingExtensions.Clone(originImage, x => x.Resize(new ResizeOptions()
+                    {
+                        Size = new SixLabors.ImageSharp.Size(resized_width, resized_height),
+                        Mode = SelectedResizeModeModel.Mode,
+                        Sampler = SelectedResamplerModel.Resampler,
+                        TargetRectangle = new Rectangle(0, 0, resized_width, resized_height)
+                    }));
+                }
+                else
+                {
+                    image_processed = ProcessingExtensions.Clone(originImage, x => x.Resize(new ResizeOptions()
+                    {
+                        Size = new SixLabors.ImageSharp.Size(resized_width, resized_height),
+                        Mode = SelectedResizeModeModel.Mode,
+                        Sampler = SelectedResamplerModel.Resampler,
+                    }));
+                }
                 memoryStream.SetLength(0);
                 var st1 = DateTime.Now;
                 await image_processed.SaveAsync(memoryStream, encoder, token);
@@ -1325,48 +1614,54 @@ namespace ImageBatchResizer.ViewModels
             }
         }
 
-        private string RenameResult(string originName)
+        private string RenameResult(string originName, int quality)
         {
             string finalName = OutputFileNamePattern;
             finalName = finalName.Replace("{time}", DateTime.Now.ToString("yyyy_MM_dd_HH_mm_ss"));
             finalName = finalName.Replace("{name}", originName);
-            finalName = finalName.Replace("{quality}", Quality.ToString());
+            finalName = finalName.Replace("{quality}", quality.ToString());
 
             return finalName;
         }
 
-        private void SetupSelectedEncoder()
+        private ImageEncoder SetupEncoder(int quality)
         {
+            ImageEncoder encoder = null;
             if (SelectedFormatModel.DisplayName == ".webp")
             {
-                SelectedFormatModel.Encoder = new WebpEncoder()
+                encoder = new WebpEncoder()
                 {
                     FileFormat = (IsWebpLossyMode) ? WebpFileFormatType.Lossy : WebpFileFormatType.Lossless,
-                    Quality = Quality,
+                    Quality = quality,
                     Method = (WebpEncodingMethod)EncodingMethod
                 };
             }
             else if (SelectedFormatModel.DisplayName == ".jpg")
             {
-                SelectedFormatModel.Encoder = new JpegEncoder()
+                encoder = new JpegEncoder()
                 {
-                    Quality = Quality
+                    Quality = quality
                 };
             }
             else if (SelectedFormatModel.DisplayName == ".png")
             {
-                SelectedFormatModel.Encoder = new PngEncoder()
+                encoder = new PngEncoder()
                 {
-                    CompressionLevel = (PngCompressionLevel)Quality
+                    CompressionLevel = (PngCompressionLevel)quality
                 };
             }
             else if (SelectedFormatModel.DisplayName == ".tif")
             {
-                SelectedFormatModel.Encoder = new TiffEncoder()
+                encoder = new TiffEncoder()
                 {
-                    CompressionLevel = (DeflateCompressionLevel)Quality
+                    CompressionLevel = (DeflateCompressionLevel)quality
                 };
             }
+            else 
+            {
+                throw new Exception("no match encoder, this should't happen.");
+            }
+            return encoder;
         }
 
         // https://stackoverflow.com/questions/40104765/bind-event-in-mvvm-and-pass-event-arguments-as-command-parameter
@@ -1389,6 +1684,10 @@ namespace ImageBatchResizer.ViewModels
                 {
                     added++;
                     InputFileList.Add(new(Path.GetFileName(path), path));
+                }
+                else
+                {
+                    Append2FullConsole($"{path} 未添加。");
                 }
             }
             Append2FullConsole($"试图添加 {paths.Length} 个文件，实际添加 {added} 个");

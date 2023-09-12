@@ -14,6 +14,8 @@ namespace ImageBatchResizer.Models
         private string _ResizedPath = "";
         private string _Path = "";
         private bool _Chosen;
+        private string _resizedResolution = "";
+        private string _resizedSize = "";
 
         public bool Chosen
         {
@@ -60,6 +62,23 @@ namespace ImageBatchResizer.Models
             DisplayName = name;
             Path = path;
             ResizedPath = "";
+        }
+
+        public string ResizedResolution
+        {
+            get => _resizedResolution;
+            set
+            {
+                SetValue(ref _resizedResolution, value);
+            }
+        }
+        public string ResizedSize
+        {
+            get => _resizedSize;
+            set
+            {
+                SetValue(ref _resizedSize, value);
+            }
         }
     }
 }

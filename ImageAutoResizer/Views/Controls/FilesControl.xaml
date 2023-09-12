@@ -27,10 +27,33 @@
                       SelectionUnit="CellOrRowHeader">
             <ui:DataGrid.Columns>
                 <DataGridCheckBoxColumn Header="选择" ElementStyle="{StaticResource DataGridCheckBoxColumnStyle}" Binding="{Binding Chosen, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
-                <DataGridTextColumn Header="文件名" IsReadOnly="True" Binding="{Binding DisplayName}"/>
-                <DataGridTextColumn Header="路径" IsReadOnly="True" Binding="{Binding Path}" />
-                <DataGridTextColumn Header="转换后路径" IsReadOnly="True" Binding="{Binding ResizedPath}" />
+                <DataGridTemplateColumn Header="文件名" IsReadOnly="True" >
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <TextBox Text="{Binding DisplayName, Mode=OneWay}"/>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+                <DataGridTemplateColumn Header="路径" IsReadOnly="True" >
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <TextBox Text="{Binding Path, Mode=OneWay}"/>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+                <DataGridTemplateColumn Header="转换后路径" IsReadOnly="True" >
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <TextBox Text="{Binding ResizedPath, Mode=OneWay}"/>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+                <!--<DataGridTextColumn Header="文件名" IsReadOnly="True" Binding="{Binding DisplayName}"/>-->
+                <!--<DataGridTextColumn Header="路径" IsReadOnly="True" Binding="{Binding Path}" /> -->
+                <!--<DataGridTextColumn Header="转换后路径" IsReadOnly="True" Binding="{Binding ResizedPath}" /> -->
                 <DataGridCheckBoxColumn Header="已处理" ElementStyle="{StaticResource DataGridCheckBoxColumnStyle}" Binding="{Binding Processed}" />
+                <DataGridTextColumn Header="分辨率" IsReadOnly="True" Binding="{Binding ResizedResolution}"/>
+                <DataGridTextColumn Header="大小" IsReadOnly="True" Binding="{Binding ResizedSize}"/>
             </ui:DataGrid.Columns>
             <!-- https://stackoverflow.com/questions/40104765/bind-event-in-mvvm-and-pass-event-arguments-as-command-parameter -->
             <i:Interaction.Triggers>
@@ -63,6 +86,16 @@
                         Click="OpenConsole_Click">
                     控制台
                 </Button>-->
+            <ui:Button VerticalAlignment="Stretch"
+                        Margin="4 0 0 0" 
+                        DockPanel.Dock="Left"
+                        Command="{Binding RevertSelectedCommand}"
+                        IsEnabled="{Binding IsEnableEdit, RelativeSource={RelativeSource AncestorType={x:Type local:FilesControl}}}">
+                <StackPanel Orientation="Horizontal">
+                    <ui:SymbolIcon Margin="0,0,6,0" Symbol="ArrowUndo20" />
+                    <TextBlock Text="反选" />
+                </StackPanel>
+            </ui:Button>
             <ui:Button VerticalAlignment="Stretch"
                         Margin="4 0 0 0"  
                         DockPanel.Dock="Left"
