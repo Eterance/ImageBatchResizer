@@ -12,7 +12,7 @@
         mc:Ignorable="d"
         NoiseOpacity="0.005"
         ExtendViewIntoTitleBar="False"
-        Title="MainWindow" Height="720" Width="900" MinWidth="500" MinHeight="600">
+        Title="ImageBatchResizer - 开发中" Height="720" Width="900" MinWidth="500" MinHeight="600">
     <!-- xmlns:i https://stackoverflow.com/questions/20743961/the-name-interaction-does-not-exist-in-the-namespace-http-schemas-microsoft -->
 
     <Window.Resources>

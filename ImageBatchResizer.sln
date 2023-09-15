@@ -3,7 +3,12 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.6.33723.286
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ImageBatchResizer", "ImageAutoResizer\ImageBatchResizer.csproj", "{73883FD8-43CE-4498-89C3-9FACD2ED2913}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ImageBatchResizer", "ImageAutoResizer\ImageBatchResizer.csproj", "{73883FD8-43CE-4498-89C3-9FACD2ED2913}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "解决方案项", "解决方案项", "{1D0DD006-D640-447D-ADD4-DC64FB817576}"
+	ProjectSection(SolutionItems) = preProject
+		readme.md = readme.md
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
