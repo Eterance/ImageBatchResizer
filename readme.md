@@ -25,10 +25,10 @@
 
 ## 目前截图
 
-![待处理图像](https://github.com/Eterance/ImageBatchResizer/tree/master/pictures/待处理图像-q90.jpg)
+![待处理图像](https://github.com/Eterance/ImageBatchResizer/blob/master/pictures/%E5%BE%85%E5%A4%84%E7%90%86%E5%9B%BE%E5%83%8F-q90.jpg)
 
-![输入参数与模式](https://github.com/Eterance/ImageBatchResizer/tree/master/pictures/输入参数与模式-q90.jpg)
+![输入参数与模式](https://github.com/Eterance/ImageBatchResizer/blob/master/pictures/%E8%BE%93%E5%85%A5%E5%8F%82%E6%95%B0%E4%B8%8E%E6%A8%A1%E5%BC%8F-q90.jpg)
 
-![输出参数](https://github.com/Eterance/ImageBatchResizer/tree/master/pictures/输出参数-q90.jpg)
+![输出参数](https://github.com/Eterance/ImageBatchResizer/blob/master/pictures/%E8%BE%93%E5%87%BA%E5%8F%82%E6%95%B0-q90.jpg)
 
-![全部参数](https://github.com/Eterance/ImageBatchResizer/tree/master/pictures/全部参数-q90.jpg)
+![全部参数](https://github.com/Eterance/ImageBatchResizer/blob/master/pictures/%E5%85%A8%E9%83%A8%E5%8F%82%E6%95%B0-q90.jpg)
