@@ -12,7 +12,7 @@
         mc:Ignorable="d"
         NoiseOpacity="0.005"
         ExtendViewIntoTitleBar="False"
-        Title="ImageBatchResizer - 开发中" Height="720" Width="900" MinWidth="500" MinHeight="600">
+        Title="ImageBatchResizer v0.1.0" Height="720" Width="900" MinWidth="500" MinHeight="600">
     <!-- xmlns:i https://stackoverflow.com/questions/20743961/the-name-interaction-does-not-exist-in-the-namespace-http-schemas-microsoft -->
 
     <Window.Resources>
@@ -152,7 +152,7 @@
                         <StackPanel Margin="16"
                                 HorizontalAlignment="Left"
                                 MaxWidth="600">
-                            <Label Margin="0 0 0 0">
+                            <Label Margin="0 0 0 24">
                                 <ui:TextBlock FontTypography="Subtitle" Text="模式"/>
                             </Label>
                             <uc:ModeControl DataContext="{Binding .}" 
@@ -246,6 +246,22 @@
                         </ScrollViewer>
                     </Grid>
                 </Grid>
+            </TabItem>
+
+            <!-- 控制台 -->
+            <TabItem IsSelected="True">
+                <TabItem.Header>
+                    <StackPanel Orientation="Horizontal">
+                        <ui:SymbolIcon Margin="0,0,6,0" Symbol="ToggleMultiple16" />
+                        <TextBlock Text="控制台" />
+                    </StackPanel>
+                </TabItem.Header>
+                <ScrollViewer VerticalScrollBarVisibility="Auto"
+                              Grid.ColumnSpan="2">
+                    <TextBox Text="{Binding FullConsoleContent, Mode=OneWay}"
+                             IsReadOnly="True">                        
+                    </TextBox>
+                </ScrollViewer>
             </TabItem>
         </TabControl>
 
