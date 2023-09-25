@@ -9,8 +9,8 @@
              mc:Ignorable="d" 
              d:DesignHeight="450" d:DesignWidth="800">
 
-    <StackPanel Orientation="Vertical">        
-        <WrapPanel Orientation="Horizontal">
+    <StackPanel Orientation="Vertical">
+        <!-- <WrapPanel Orientation="Horizontal">
             <RadioButton x:Name="FileSizeModeRadioButton"
                                  IsChecked="{Binding IsFileSizeFirstMode}"
                                  Margin="8 8 0 0"
@@ -23,14 +23,14 @@
                                  VerticalContentAlignment="Center">
                 <Label>分辨率优先</Label>
             </RadioButton>
-        </WrapPanel>
+        </WrapPanel>-->
         
         <!-- 大小优先设置 -->
         <StackPanel Orientation="Vertical"
                     CanVerticallyScroll="True"
                     Visibility="{Binding ElementName=FileSizeModeRadioButton, Path=IsChecked, Converter={StaticResource IsCheck2VisibilityConverter}}">
             <uc:FileSizeParamatersControl DataContext="{Binding .}"
-                                      Margin="0 24 0 0"
+                                      Margin="0 0 0 0"
                                     MaxWidth="600"/>
             <WrapPanel Orientation="Horizontal"
                         Margin="0 24 0 0">
@@ -110,7 +110,7 @@
 
 
         <!-- 分辨率优先设置 -->
-        <StackPanel Orientation="Vertical"
+        <!-- <StackPanel Orientation="Vertical"
                     Visibility="{Binding ElementName=ResModeRadioButton, Path=IsChecked, Converter={StaticResource IsCheck2VisibilityConverter}}">
             <uc:ResolutionParametersControl DataContext="{Binding .}"
                                           Margin="0 24 0 0"
@@ -166,7 +166,7 @@
                     </RadioButton>
                 </StackPanel>
             </StackPanel>
-        </StackPanel>
+        </StackPanel> -->
 
 
         <uc:ComboBoxControl Margin="0 24 0 0"
